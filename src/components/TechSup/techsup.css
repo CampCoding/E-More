@@ -1,0 +1,57 @@
+.tech_sup_page {
+  background-image: url("../../assets/tech2.jpg");
+  min-height: calc(100vh - 80px);
+  background-size: cover;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.tech_sup_page .tecs_sup_socials {
+  width: 300px;
+  min-height: 150px;
+  border-radius: 4px;
+  background-color: white;
+  margin: auto;
+  padding: 10px;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+  box-shadow: rgba(0, 0, 0, 0.388) 0px 1px 4px;
+}
+
+.tecs_sup_socials .help_app {
+  background-color: #f2f2f2;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 10px;
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--main-color);
+  transition: .2s all ease-in-out;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+}
+
+.tecs_sup_socials .help_app a {
+  text-decoration: none;
+}
+
+.tecs_sup_socials .help_app:hover {
+  background-color: var(--main-color);
+  color: white;
+}
+
+.tecs_sup_socials .help_app svg {
+  color: var(--main-color) !important;
+}
+
+.tecs_sup_socials .help_app:hover svg,
+.tecs_sup_socials .help_app:hover h4 {
+  color: white !important;
+}

@@ -1,0 +1,38 @@
+{
+  "short_name": "MR.El-Fallah ",
+  "name": "MR.El-Fallah  - English Learning for Kids",
+  "description": "Fun and Interactive English Learning Platform for Children",
+  "icons": [
+    {
+      "src": "https://res.cloudinary.com/duovxefh6/image/upload/v1750670187/logo_mm135b.png",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff",
+  "orientation": "portrait",
+  "categories": ["education", "kids", "learning"],
+  "screenshots": [
+    {
+      "src": "https://res.cloudinary.com/duovxefh6/image/upload/v1750670187/logo_mm135b.png",
+      "sizes": "1280x720",
+      "type": "image/png"
+    }
+  ],
+  "prefer_related_applications": false
+}

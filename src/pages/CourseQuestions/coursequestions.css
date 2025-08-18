@@ -1,0 +1,209 @@
+.course_questions_page {
+  background-color: #f1f1f1;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.course_questions_page .cour_name {
+  background-color: #fff;
+  padding: 20px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.course_questions_page .cour_name > * {
+  margin: 0px;
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--main-color) !important;
+}
+
+.course_questions_page .cour_name > svg {
+  cursor: pointer;
+}
+
+.course_questions_page .chat {
+  padding: 20px;
+  min-height: 80vh;
+  margin-top: 40px;
+  background-image: url("../../assets/questionsBg1.jpg");
+  background-image: url("../../assets/questionsBg2.jpg");
+  background-size: cover;
+  position: relative;
+  padding-bottom: 70px;
+}
+
+.chat .type {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.chat .type button {
+  width: 200px;
+  padding: 10px;
+  border: none;
+  transition: 0.3s all ease-in-out;
+}
+
+.chat .type button:nth-of-type(1) {
+  border-radius: 10px 0px 0px 10px;
+}
+
+.chat .type button:nth-of-type(2) {
+  border-radius: 0px 10px 10px 0px;
+}
+
+.chat .type button.active {
+  background-color: var(--main-color);
+  color: white;
+}
+
+.course_questions_page .chat .det_line {
+  position: relative;
+
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: auto;
+  margin-bottom: 20px;
+}
+
+.course_questions_page .chat .det_line > * {
+  margin: 0px;
+  color: white;
+}
+
+.det_line > * {
+  width: 40%;
+  text-align: center;
+}
+
+.det_line::after {
+  content: "";
+  position: absolute;
+  left: 0px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: white;
+  width: 35%;
+  height: 5px;
+  border-radius: 10px;
+}
+
+.det_line::before {
+  content: "";
+  position: absolute;
+  right: 0px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: white;
+  width: 35%;
+  height: 5px;
+  border-radius: 10px;
+}
+
+.chat .question {
+  margin-bottom: 20px;
+  color: white;
+  max-width: 500px;
+}
+
+.chat .question .stu_data {
+  margin-bottom: 10px !important;
+  display: flex;
+  align-items: center;
+  grid-area: 4px;
+}
+
+.chat .questions_cont {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.chat .questions_cont .question {
+  background-color: var(--main-color);
+  padding: 20px;
+  border-radius: 10px;
+  position: relative;
+}
+
+.chat .questions_cont .question::after {
+  content: "";
+  position: absolute;
+  border: 10px solid var(--main-color);
+  border-top-color: transparent;
+  border-right-color: transparent;
+  right: -10px;
+}
+
+.chat .questions_cont .question > * {
+  margin: 0px;
+}
+
+.chat .ques .time {
+  margin-top: 20px;
+}
+
+.chat .ques .time > * {
+  margin: 0px;
+}
+
+.chat .replay {
+  margin-top: 20px;
+  background-color: white;
+  width: fit-content;
+  padding: 20px;
+  border-radius: 10px;
+  position: relative;
+  max-width: 500px;
+  margin-bottom: 20px;
+}
+
+.chat .replay::after {
+  content: "";
+  position: absolute;
+  border: 10px solid white;
+  border-top-color: transparent;
+  border-left-color: transparent;
+  left: -10px;
+}
+
+.chat .replay > * {
+  margin-bottom: 0px;
+}
+
+.chat .replay > h5 {
+  margin-top: 10px;
+}
+
+.chat .add_new_ques {
+  position: absolute;
+  bottom: 10px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.chat .add_new_ques input {
+  padding: 10px;
+  width: 90%;
+  outline: none;
+  border: 1px solid #ccc;
+  border-radius: 40px;
+}
+
+.chat .add_new_ques img {
+  width: 40px;
+  cursor: pointer;
+}
+
+@media (max-width: 767px) {
+  .course_questions_page {
+    padding-bottom: 70px;
+  }
+}

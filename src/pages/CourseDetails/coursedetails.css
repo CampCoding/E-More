@@ -1,0 +1,55 @@
+.coursedetails_page {
+  margin-top: 10px;
+}
+
+.coursedetails_container {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 20px;
+  flex-wrap: wrap;
+}
+
+.coursedetails_container.full_wid {
+  margin: auto;
+}
+
+.coursedetails_container .left {
+  width: 100%;
+  padding: 10px;
+}
+
+.coursedetails_container .left.m_au {
+  margin: auto;
+}
+
+.coursedetails_container .right {
+  width: 29%;
+  padding: 10px;
+  position: relative;
+}
+
+.coursedetails_container .right.no_wid {
+  display: none;
+}
+
+@media (max-width:992px) {
+
+  .coursedetails_container .left,
+  .coursedetails_container .right {
+    width: 800px;
+    max-width: 100%;
+    margin: auto;
+  }
+}
+
+@media (max-width:767px) {
+
+  .coursedetails_container .left,
+  .coursedetails_container .right {
+    width: 100%;
+  }
+
+  .coursedetails_container {
+    padding: 0px;
+  }
+}

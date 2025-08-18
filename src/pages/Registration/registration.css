@@ -1,0 +1,109 @@
+.registration {
+  padding: 40px;
+}
+
+.registration form .welcome div {
+  font-size: 23px;
+  font-weight: 500;
+}
+
+.registration form .welcome span {
+  font-size: 15px;
+}
+
+.registration form .formTitle {
+  text-align: start;
+  margin: 10px 0px 30px;
+  font-size: 2rem;
+  font-weight: 600;
+  position: relative;
+}
+
+.registration form .formTitle::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -5px;
+  height: 2px;
+  width: 65px;
+  background: blue;
+}
+
+.registration form {
+  width: 500px;
+  max-width: 100%;
+  margin: auto;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.5);
+}
+
+.registration h5 {
+  margin: 30px 0px 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  font-size: 22px;
+}
+
+.registration form > div {
+  margin-bottom: 10px;
+}
+
+.registration form input::placeholder {
+  color: rgb(172, 171, 171);
+}
+
+.registration form label {
+  margin-bottom: 5px;
+  padding: 0px 5px;
+  font-size: medium;
+  color: #858b8f;
+}
+
+.registration h5 span:nth-child(2) {
+  color: #1255f0;
+  cursor: pointer;
+  font-size: large;
+}
+
+.react-tel-input input {
+  width: 100%;
+  border-radius: 0%;
+}
+
+.registration button {
+  box-shadow: 0px 5px 10px 0px rgb(88, 247, 170);
+}
+
+@media (max-width: 1300px) {
+  .registration {
+    background-position-y: -300px !important;
+  }
+}
+
+@media (max-width: 1200px) {
+  .registration {
+    background-position-y: -100px !important;
+  }
+}
+
+@media (max-width: 992px) {
+  .registration {
+    background-position-y: -200px;
+  }
+}
+
+@media (max-width: 767px) {
+  .registration {
+    background-position-x: -50px;
+    margin-bottom: 40px;
+  }
+}
+
+@media (max-width: 565px) {
+  .registration {
+    padding: 10px;
+  }
+}

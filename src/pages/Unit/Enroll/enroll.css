@@ -1,0 +1,115 @@
+.infoContain {
+  display: flex;
+  justify-content: flex-start;
+  background-color: black;
+  color: white;
+}
+
+.subscripe {
+  width: 750px;
+  max-width: 90%;
+  background-color: white;
+  margin: 40px auto;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.5);
+}
+
+.subscripe .text-secondary {
+  font-size: 15px;
+  width: 70%;
+  max-width: 100%;
+}
+
+.title {
+  position: relative;
+}
+
+.title::before {
+  content: "";
+  position: absolute;
+
+  bottom: -5px;
+  height: 2px;
+  width: 85px;
+  background: var(--main-color);
+}
+
+.imgContain {
+  position: absolute;
+  right: 80px;
+  margin-top: 50px;
+  padding-bottom: 20px;
+  border: 0.5px solid white;
+  box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.3);
+}
+
+.learnContain {
+  border: 1px solid black;
+  padding: 0px 20px 20px;
+  margin: 3rem;
+  width: 50%;
+}
+
+.learnContain .learnSent {
+  width: 50%;
+}
+
+.courseContain {
+  width: 50%;
+  margin: 3rem;
+}
+
+.collapseItem {
+  border: 1px solid rgba(0, 0, 0, 0.027);
+}
+
+.contentCard {
+  border: 1px solid rgba(0, 0, 0, 0.027);
+}
+
+.contentCard:hover {
+  background-color: #d1d7dc;
+}
+
+@media screen and (max-width: 768px) {
+  .infoContain {
+    display: flex;
+    background-color: white;
+    color: black;
+    flex-direction: column-reverse;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .textContain {
+    width: 100%;
+  }
+
+  .imgContain {
+    position: unset;
+    margin-top: 0%;
+    width: 80%;
+  }
+
+  .courseContain {
+    width: 90%;
+    margin: auto;
+    padding: auto;
+  }
+
+  .learnContain {
+    width: 90%;
+    margin: 30px auto;
+    padding: auto;
+  }
+}
+
+.Toastify {
+  z-index: 21344321112 !important;
+  position: relative;
+}
+
+#root > div > div.coursecontentdetails {
+  min-height: 100vh;
+}

@@ -1,0 +1,30 @@
+.review {
+  display: flex;
+
+  margin-bottom: 20px;
+  gap: 10px;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.review .left img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
+
+.review .right > * {
+  margin: 0px;
+}
+
+.review .right h4 {
+  font-size: 20px;
+  color: var(--main-color);
+  margin-bottom: 10px;
+}
+
+.review .right p {
+  font-size: 18px;
+  color: #587a86;
+}

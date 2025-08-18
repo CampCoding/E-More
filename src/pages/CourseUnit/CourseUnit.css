@@ -1,0 +1,49 @@
+.course_units_container {
+    display: flex;
+  gap: 20px;
+  margin: 20px 40px;
+  padding: 20px;
+}
+
+.course_units_card {
+    background-color: white;
+    padding: 15px 10px;
+    color: white;
+    border-radius: 7px;
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #27be9f;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.course_units_card img {
+    width: 30%;
+}
+
+.course_units_card h2 {
+    text-align: center;
+    margin: 10px 0px;
+}
+
+.course_units_card p {
+    margin: 0px auto;
+    text-align: center;
+}
+
+.course_units_card:hover {
+    background-color: #27be9f;
+    color: white;
+}
+
+.course_units_card h2 {
+    font-size: 20px !important;
+    font-weight: 600;
+}
+
+.course_units_card p{
+   width: 75%;
+} 
