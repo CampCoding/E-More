@@ -288,7 +288,7 @@ const LineMatchingGame = ({ gameData, onChange, defaultConnectionsData = [] }) =
             </p>
 
             <div className="flex justify-center gap-4 flex-wrap">
-              <div
+              {/* <div
                 className={`px-6 py-3 rounded-full font-bold text-sm md:text-lg transition-all duration-500 ${
                   gameComplete
                     ? "bg-gradient-to-r from-green-400 to-emerald-500 text-white animate-bounce"
@@ -299,7 +299,7 @@ const LineMatchingGame = ({ gameData, onChange, defaultConnectionsData = [] }) =
                   النقاط: {score}/{maxPairs}
                 </span>
                 {gameComplete && <span className="ml-2">🎉</span>}
-              </div>
+              </div> */}
 
               <button
                 onClick={resetGame}
@@ -309,7 +309,7 @@ const LineMatchingGame = ({ gameData, onChange, defaultConnectionsData = [] }) =
                 إعادة تعيين اللعبة
               </button>
 
-              <button
+              {/* <button
                 onClick={() => {
                   setShowAnswers((s) => !s);
                   setCurrentPick(null);
@@ -322,7 +322,7 @@ const LineMatchingGame = ({ gameData, onChange, defaultConnectionsData = [] }) =
               >
                 <Eye className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
                 {showAnswers ? "إخفاء الإجابات" : " عرض الإجابات"}
-              </button>
+              </button> */}
             </div>
           </div>
 
@@ -475,7 +475,7 @@ const LineMatchingGame = ({ gameData, onChange, defaultConnectionsData = [] }) =
           </div>
 
           {/* status */}
-          <div className="mt-8 text-center space-y-4">
+          {/* <div className="mt-8 text-center space-y-4">
             {gameComplete && !showAnswers && (
               <div className="bg-gradient-to-r from-green-400/20 to-emerald-400/20 backdrop-blur-sm border-2 border-green-400 text-white px-8 py-6 rounded-2xl text-xl font-bold animate-bounce shadow-2xl shadow-green-400/30">
                 <div className="flex items-center justify-center gap-2">
@@ -497,7 +497,7 @@ const LineMatchingGame = ({ gameData, onChange, defaultConnectionsData = [] }) =
                 ⚡ اختر عنصراً من العمود المقابل لإكمال التوصيل!
               </div>
             )}
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

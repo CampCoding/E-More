@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Clock,
   CheckCircle,
@@ -20,9 +20,9 @@ import useGetUserData from "../../Hooks/ApiHooks/useGetUserData";
 
 export default function Quiz({
   data = mockData,
-  examData,
   timer = 5,
   examId,
+  examData,
   type = "exams",
 }) {
   // State
@@ -40,13 +40,9 @@ export default function Quiz({
   const [questionTimes, setQuestionTimes] = useState(
     Array(data.length).fill(0)
   );
-
-  // Persistence helpers for reload-finish flow
-  const pendingAutoFinishRef = useRef(false);
-  const expectedTimeLeftRef = useRef(null);
-  const PENDING_FINISH_KEY = useMemo(
-    () => (examId ? `quiz:pendingFinish:${examId}` : null),
-    [examId]
+  // Track which answers were successfully sent to backend
+  const [sentAnswers, setSentAnswers] = useState(
+    Array(data.length).fill(false)
   );
 
   // NEW: Drawer state for mobile
@@ -70,6 +66,7 @@ export default function Quiz({
   }
 
   const handleArrangePuzzle = (arranged) => {
+    if (submittedAnswers[questionIndex]) return; // prevent edits after submit
     if (arranged.length == 0) {
       const newAnswers = [...answers];
       newAnswers[questionIndex] = null;
@@ -121,6 +118,7 @@ export default function Quiz({
 
   const onLineMatchChange = useCallback(
     (lines) => {
+      if (submittedAnswers[questionIndex]) return; // prevent edits after submit
       const value = lines && lines.length ? lines : null;
       setAnswers((prev) => {
         const next = [...prev];
@@ -129,11 +127,34 @@ export default function Quiz({
         return next;
       });
     },
-    [questionIndex]
+    [questionIndex, submittedAnswers]
   );
 
   const { handlePostData } = usePostData();
   const userData = useGetUserData();
+
+  const toStudentAnswerSingle = (question, ans) => {
+    if (!question) return "";
+    switch (question?.type) {
+      case "arrangePuzzle": {
+        if (!Array.isArray(ans)) return "";
+        const joiner = question?.gameType === "character" ? "" : " ";
+        return ans.join(joiner);
+      }
+      case "line-match": {
+        if (!Array.isArray(ans)) return [];
+        return ans.map((c) => ({
+          text: c?.leftData?.text ?? "",
+          type: String(c?.leftData?.type ?? ""),
+          answerType: String(c?.rightData?.type ?? ""),
+          answerText: c?.rightData?.text ?? "",
+        }));
+      }
+      default: {
+        return question?.real_answers?.[ans]?.answer_text ?? "";
+      }
+    }
+  };
 
   function handleSubmitAnswers() {
     const q = data[questionIndex];
@@ -154,7 +175,35 @@ export default function Quiz({
           .filter((opt) => !opt.answer_check)
           .map((opt) => opt.answer_text)
       );
+    } else if (q?.type === "arrangePuzzle") {
+      setCorrectAnswer(q?.correctSentence || q?.question_text || "");
+      setAllWrongAnswers([]);
+    } else if (q?.type === "line-match") {
+      const totalPairs = Math.min(
+        q?.leftColumn?.length || 0,
+        q?.rightColumn?.length || 0
+      );
+      setCorrectAnswer(`عدد التوصيلات الصحيحة المتوقعة: ${totalPairs}`);
+      setAllWrongAnswers([]);
     }
+
+    // send to backend
+    const payload = {
+      question_id: q?.question_id,
+      student_answer: toStudentAnswerSingle(q, ans),
+      time_taken: questionTimes[questionIndex] || 0,
+    };
+    handlePostData(
+      "user/courses/insert_solving_uqs.php",
+      JSON.stringify(payload),
+      () => {
+        setSentAnswers((prev) => {
+          const next = [...prev];
+          next[questionIndex] = true;
+          return next;
+        });
+      }
+    );
   }
 
   function handleQuestionClick(index) {
@@ -227,15 +276,21 @@ export default function Quiz({
         JSON.stringify(payload),
         (res) => {
           console.log("solve_exam response", res?.data);
+          // mark all answered questions as sent
+          setSentAnswers((prev) => {
+            const next = [...prev];
+            data.forEach((_, idx) => {
+              const a = answers[idx];
+              const has = a !== null && (!Array.isArray(a) || a.length > 0);
+              if (has) next[idx] = true;
+            });
+            return next;
+          });
         }
       );
     }
 
     setQuizFinished(true);
-    // Clear any pending finish cache once we consider it finished
-    try {
-      if (PENDING_FINISH_KEY) localStorage.removeItem(PENDING_FINISH_KEY);
-    } catch (err) {}
   }
 
   function handleRestartQuiz() {
@@ -249,9 +304,7 @@ export default function Quiz({
     setQuizFinished(false);
     setFinalResults({});
     setQuestionTimes(Array(data.length).fill(0));
-    try {
-      if (PENDING_FINISH_KEY) localStorage.removeItem(PENDING_FINISH_KEY);
-    } catch (err) {}
+    setSentAnswers(Array(data.length).fill(false));
   }
 
   // Effects
@@ -273,121 +326,48 @@ export default function Quiz({
     }
   }, [timeLeft, quizFinished, questionIndex]); // eslint-disable-line
 
+  // Fix: Handle correct answer display for arrangePuzzle and line match types
   useEffect(() => {
     if (submittedAnswers[questionIndex] && !quizFinished) {
-      setCorrectAnswer(data[questionIndex].question_valid_answer);
-      setAllWrongAnswers(
-        data[questionIndex].real_answers
-          .filter((opt) => !opt.answer_check)
-          .map((opt) => opt.answer_text)
-      );
+      const question = data[questionIndex];
+      let correctAns = "";
+      let wrongAnswers = [];
+
+      if (question.type === "arrangePuzzle") {
+        // For arrangePuzzle, show the correct sentence as the answer
+        correctAns = question.correctSentence || question.question_text || "";
+        wrongAnswers = []; // Not applicable
+      } else if (question.type === "line-match") {
+        // For line-match, show the correct pairs as a formatted string
+        if (Array.isArray(question.correctPairs)) {
+          correctAns = question.correctPairs
+            .map(
+              (pair, idx) =>
+                `${pair.left || question.leftColumn?.[idx] || ""} - ${
+                  pair.right || question.rightColumn?.[idx] || ""
+                }`
+            )
+            .join(", ");
+        } else {
+          correctAns = "";
+        }
+        wrongAnswers = []; // Not applicable
+      } else {
+        // Default: MCQ and others
+        correctAns = question.question_valid_answer;
+        wrongAnswers =
+          question.real_answers
+            ?.filter((opt) => !opt.answer_check)
+            .map((opt) => opt.answer_text) || [];
+      }
+
+      setCorrectAnswer(correctAns);
+      setAllWrongAnswers(wrongAnswers);
     } else if (!quizFinished) {
       setCorrectAnswer("");
       setAllWrongAnswers([]);
     }
   }, [questionIndex, submittedAnswers, data, quizFinished]);
-
-  // Warn user before reloading/closing if there are answered (unsaved) questions
-  const hasAnyAnswered = useMemo(
-    () =>
-      answers.some(
-        (ans) => ans !== null && (!Array.isArray(ans) || ans.length > 0)
-      ),
-    [answers]
-  );
-
-  useEffect(() => {
-    if (quizFinished || !hasAnyAnswered) return;
-    const onBeforeUnload = (e) => {
-      try {
-        if (PENDING_FINISH_KEY) {
-          const payloadToCache = {
-            examId,
-            timestamp: Date.now(),
-            answers,
-            questionTimes,
-            timeLeft,
-            questionIds: (data || []).map((q) => q?.question_id ?? null),
-            type,
-          };
-          localStorage.setItem(
-            PENDING_FINISH_KEY,
-            JSON.stringify(payloadToCache)
-          );
-        }
-      } catch (err) {}
-      e.preventDefault();
-      e.returnValue = ""; // triggers browser confirmation dialog
-    };
-    window.addEventListener("beforeunload", onBeforeUnload);
-    return () => window.removeEventListener("beforeunload", onBeforeUnload);
-  }, [
-    quizFinished,
-    hasAnyAnswered,
-    PENDING_FINISH_KEY,
-    answers,
-    questionTimes,
-    timeLeft,
-    data,
-    examId,
-    type,
-  ]);
-
-  // On mount after a reload, auto-finish if a pending cache exists for this exam
-  useEffect(() => {
-    if (!PENDING_FINISH_KEY) return;
-    try {
-      const raw = localStorage.getItem(PENDING_FINISH_KEY);
-      if (!raw) return;
-      const cached = JSON.parse(raw);
-      if (!cached || cached.examId !== examId) return;
-
-      const cachedAnswers = Array.isArray(cached.answers)
-        ? cached.answers
-        : Array(data.length).fill(null);
-      const cachedTimes = Array.isArray(cached.questionTimes)
-        ? cached.questionTimes
-        : Array(data.length).fill(0);
-
-      // Rehydrate minimal state to compute results and submit
-      setAnswers(cachedAnswers);
-      setSubmittedAnswers(
-        cachedAnswers.map(
-          (ans) => ans !== null && (!Array.isArray(ans) || ans.length > 0)
-        )
-      );
-      setQuestionTimes((prev) => {
-        const merged = Array(data.length).fill(0);
-        for (let i = 0; i < merged.length; i++) {
-          merged[i] = Number(cachedTimes[i] || 0);
-        }
-        return merged;
-      });
-      if (typeof cached.timeLeft === "number") {
-        expectedTimeLeftRef.current = Number(cached.timeLeft);
-        setTimeLeft(Number(cached.timeLeft));
-      } else {
-        expectedTimeLeftRef.current = null;
-      }
-      pendingAutoFinishRef.current = true;
-    } catch (err) {}
-  }, [PENDING_FINISH_KEY, examId, data.length]);
-
-  // After rehydration, finish the quiz once state is set
-  useEffect(() => {
-    if (!pendingAutoFinishRef.current) return;
-    // Guard: ensure state arrays are aligned to current data length
-    if (answers.length !== data.length || questionTimes.length !== data.length)
-      return;
-    // Ensure timeLeft is applied if we restored it
-    if (
-      expectedTimeLeftRef.current !== null &&
-      timeLeft !== expectedTimeLeftRef.current
-    )
-      return;
-    pendingAutoFinishRef.current = false;
-    handleFinishQuiz();
-  }, [answers, questionTimes, data.length, timeLeft]);
 
   // Utils
   const formatTime = (seconds) => {
@@ -455,20 +435,40 @@ export default function Quiz({
     return "";
   };
 
+  // Build the correct solution pairs for line-match questions
+  const getLineMatchCorrectPairs = (question) => {
+    if (!question || question?.type !== "line-match") return [];
+    const leftItems = question?.leftColumn || [];
+    const rightItems = question?.rightColumn || [];
+    const typeToRightText = new Map();
+    rightItems.forEach((r) => {
+      const key = String(r?.type ?? "");
+      if (!typeToRightText.has(key)) typeToRightText.set(key, r?.text ?? "");
+    });
+    return leftItems.map((l) => ({
+      leftText: l?.text ?? "",
+      rightText: typeToRightText.get(String(l?.type ?? "")) ?? "",
+    }));
+  };
+
   const getPaginationButtonColor = (index) => {
     if (index === questionIndex && !quizFinished) {
-      return "bg-gradient-to-r from-yellow-400 to-orange-400";
+      return "bg-gradient-to-r from-yellow-400 to-orange-400 shadow-lg";
+    }
+    if (!sentAnswers[index]) {
+      return "bg-gradient-to-r from-gray-400 to-gray-500 hover:from-gray-300 hover:to-gray-400";
     }
     const ans = answers[index];
-    const hasAnswer =
+    if (
       ans !== null &&
-      (!Array.isArray(ans) || (Array.isArray(ans) && ans.length > 0));
-
-    // Design only by solved (answered) vs not solved, ignore correctness
-    if (hasAnswer) {
-      return "bg-gradient-to-r from-indigo-500 to-purple-500";
+      (!Array.isArray(ans) || (Array.isArray(ans) && ans.length > 0))
+    ) {
+      const correct = isAnswerCorrect(data[index], ans);
+      return correct
+        ? "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 shadow-md"
+        : "bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-400 hover:to-rose-400 shadow-md";
     }
-    return "bg-gradient-to-r from-gray-400 to-gray-500";
+    return "bg-gradient-to-r from-gray-400 to-gray-500 hover:from-gray-300 hover:to-gray-400";
   };
 
   const getGradeEmoji = (p) =>
@@ -1183,15 +1183,15 @@ export default function Quiz({
       <div className="grid h-full grid-rows-[auto,1fr] gap-3 container py-0">
         {/* DESKTOP/TABLET TOP BAR (hidden on mobile) */}
         <header className="hidden md:block bg-gradient-to-r from-blue-700 via-blue-600 to-rose-600 text-white rounded-2xl shadow-xl px-4 py-3">
-          <div className="flex items-center justify-between gap-3">
-            <div>
+          <div className="">
+            <div className="flex items-center gap-2  mb-4 ">
               <h1 className="font-extrabold text-xl m-0">
-                {examData?.exam_name}
+                {examData?.course_name}
               </h1>
-
-              <p className="text-xs text-slate-200">
-                {examData?.exam_description}
-              </p>
+              {<ArrowLeft />}
+              <h2 className="text-lg m-0 p-0 text-slate-200">
+                {examData?.unit_name}
+              </h2>
             </div>
 
             <div className=" flex-1 h-3 bg-white/30 rounded-full overflow-hidden">
@@ -1222,11 +1222,11 @@ export default function Quiz({
           >
             <Menu />
           </button>
-          <div className="text-center">
-            <h1 className="font-extrabold text-xl m-0">
-              {examData?.exam_name}
-            </h1>
-          </div>
+          <div className="flex  items-center gap-2  ">
+            <h2 className="text-lg m-0 p-0 text-slate-200">
+              {examData?.unit_name}
+            </h2>
+          </div>{" "}
           {type !== "qbank" && timer ? (
             <div className="flex items-center gap-2 bg-white/20 rounded-full px-3 py-1">
               <Clock className="text-white w-4 h-4" />
@@ -1296,6 +1296,48 @@ export default function Quiz({
                   </span>
                 </div>
 
+                {/* Solved Questions Summary */}
+                <div className="flex items-center justify-between mt-2 text-xs">
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                      <span className="text-green-700 font-medium">
+                        {
+                          sentAnswers.filter(
+                            (_, index) =>
+                              answers[index] !== null &&
+                              (!Array.isArray(answers[index]) ||
+                                (Array.isArray(answers[index]) &&
+                                  answers[index].length > 0)) &&
+                              isAnswerCorrect(data[index], answers[index])
+                          ).length
+                        }{" "}
+                        صحيح
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                      <span className="text-red-700 font-medium">
+                        {
+                          sentAnswers.filter(
+                            (_, index) =>
+                              answers[index] !== null &&
+                              (!Array.isArray(answers[index]) ||
+                                (Array.isArray(answers[index]) &&
+                                  answers[index].length > 0)) &&
+                              !isAnswerCorrect(data[index], answers[index])
+                          ).length
+                        }{" "}
+                        خطأ
+                      </span>
+                    </div>
+                  </div>
+                  <span className="text-gray-600 font-medium">
+                    {sentAnswers.filter(Boolean).length}/{data.length} تم
+                    الإجابة
+                  </span>
+                </div>
+
                 {/* Enhanced Timer */}
                 {type !== "qbank" && timer && (
                   <div className="flex items-center justify-center gap-2 mt-3 p-2 bg-white/80 backdrop-blur-sm rounded-lg border border-blue-200/50 shadow-sm">
@@ -1315,25 +1357,72 @@ export default function Quiz({
                   الأسئلة
                 </h3>
                 <div className="grid grid-cols-4 py-3 px-2 max-h-full custom-scrollbar overflow-hidden gap-2 overflow-y-auto   ">
-                  {[...submittedAnswers].map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleQuestionClick(index)}
-                      className={`relative h-12 rounded-xl text-white text-sm font-bold shadow-md  transition-all duration-200 transform  active:scale-95 ${getPaginationButtonColor(
-                        index
-                      )} ${
-                        index === questionIndex
-                          ? "ring-4 ring-yellow-300 ring-offset-2 ring-offset-white scale-105"
-                          : ""
-                      }`}
-                      title={`سؤال ${index + 1}`}
-                    >
-                      <span className="relative z-10">{index + 1}</span>
-                      {index === questionIndex && (
-                        <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 rounded-xl animate-pulse"></div>
-                      )}
-                    </button>
-                  ))}
+                  {[...submittedAnswers].map((_, index) => {
+                    const isAnswered = sentAnswers[index];
+                    const isCorrect =
+                      isAnswered &&
+                      answers[index] !== null &&
+                      (!Array.isArray(answers[index]) ||
+                        (Array.isArray(answers[index]) &&
+                          answers[index].length > 0)) &&
+                      isAnswerCorrect(data[index], answers[index]);
+                    const isWrong =
+                      isAnswered &&
+                      answers[index] !== null &&
+                      (!Array.isArray(answers[index]) ||
+                        (Array.isArray(answers[index]) &&
+                          answers[index].length > 0)) &&
+                      !isAnswerCorrect(data[index], answers[index]);
+
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => handleQuestionClick(index)}
+                        className={`relative h-12 rounded-xl text-white text-sm font-bold shadow-md  transition-all duration-200 transform  active:scale-95 ${getPaginationButtonColor(
+                          index
+                        )} ${
+                          index === questionIndex
+                            ? "ring-4 ring-yellow-300 ring-offset-2 ring-offset-white scale-105"
+                            : ""
+                        }`}
+                        title={`سؤال ${index + 1}${
+                          isAnswered
+                            ? isCorrect
+                              ? " - إجابة صحيحة"
+                              : " - إجابة خاطئة"
+                            : " - لم يُجاب عليه"
+                        }`}
+                      >
+                        <span className="relative z-10 flex items-center justify-center h-full">
+                          {index + 1}
+                          {/* Status indicators */}
+                          {isAnswered && (
+                            <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
+                              {isCorrect ? (
+                                <CheckCircle className="w-3 h-3 text-white drop-shadow-sm" />
+                              ) : (
+                                <XCircle className="w-3 h-3 text-white drop-shadow-sm" />
+                              )}
+                            </div>
+                          )}
+                        </span>
+                        {index === questionIndex && (
+                          <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 rounded-xl animate-pulse"></div>
+                        )}
+
+                        {/* Progress indicator for answered questions */}
+                        {isAnswered && (
+                          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/30 rounded-b-xl">
+                            <div
+                              className={`h-full rounded-b-xl transition-all duration-500 ${
+                                isCorrect ? "bg-green-400" : "bg-red-400"
+                              }`}
+                            ></div>
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -1395,31 +1484,115 @@ export default function Quiz({
                 التنقل بين الأسئلة
               </h2>
               <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-400 via-purple-500 to-cyan-400 rounded-full opacity-60"></div>
+
+              {/* Progress Summary */}
+              <div className="mt-3 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                    <span className="text-green-700 font-medium">
+                      {
+                        sentAnswers.filter(
+                          (_, index) =>
+                            answers[index] !== null &&
+                            (!Array.isArray(answers[index]) ||
+                              (Array.isArray(answers[index]) &&
+                                answers[index].length > 0)) &&
+                            isAnswerCorrect(data[index], answers[index])
+                        ).length
+                      }
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                    <span className="text-red-700 font-medium">
+                      {
+                        sentAnswers.filter(
+                          (_, index) =>
+                            answers[index] !== null &&
+                            (!Array.isArray(answers[index]) ||
+                              (Array.isArray(answers[index]) &&
+                                answers[index].length > 0)) &&
+                            !isAnswerCorrect(data[index], answers[index])
+                        ).length
+                      }
+                    </span>
+                  </div>
+                </div>
+                <span className="text-gray-600 font-medium">
+                  {sentAnswers.filter(Boolean).length}/{data.length}
+                </span>
+              </div>
             </div>
 
             {/* Enhanced Grid with Better Scrolling */}
             <div className="relative m-3 max-h-full  flex-1 overflow-hidden rounded-2xl bg-gradient-to-b from-transparent to-blue-50/30 mt-4 mb-4">
               <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/50 pointer-events-none z-10 rounded-2xl"></div>
               <div className="grid grid-cols-3 overflow-hidden gap-3  custom-scrollbar pr-2 max-h-full scroll-smooth">
-                {[...submittedAnswers].map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleQuestionClick(index)}
-                    className={`group relative h-12 rounded-2xl text-white text-sm font-bold shadow-lg transition-all duration-300 ease-out transform hover:scale-110 hover:-translate-y-1 active:scale-95 ${getPaginationButtonColor(
-                      index
-                    )} ${
-                      index === questionIndex
-                        ? "ring-4 ring-yellow-300/80 ring-offset-2 ring-offset-white/50 scale-110 shadow-2xl animate-pulse"
-                        : "hover:shadow-xl"
-                    }`}
-                    title={`سؤال ${index + 1}`}
-                  >
-                    <span className="relative z-10 drop-shadow-sm">
-                      {index + 1}
-                    </span>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  </button>
-                ))}
+                {[...submittedAnswers].map((_, index) => {
+                  const isAnswered = sentAnswers[index];
+                  const isCorrect =
+                    isAnswered &&
+                    answers[index] !== null &&
+                    (!Array.isArray(answers[index]) ||
+                      (Array.isArray(answers[index]) &&
+                        answers[index].length > 0)) &&
+                    isAnswerCorrect(data[index], answers[index]);
+                  const isWrong =
+                    isAnswered &&
+                    answers[index] !== null &&
+                    (!Array.isArray(answers[index]) ||
+                      (Array.isArray(answers[index]) &&
+                        answers[index].length > 0)) &&
+                    !isAnswerCorrect(data[index], answers[index]);
+
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => handleQuestionClick(index)}
+                      className={`group relative h-12 rounded-2xl text-white text-sm font-bold shadow-lg transition-all duration-300 ease-out transform hover:scale-110 hover:-translate-y-1 active:scale-95 ${getPaginationButtonColor(
+                        index
+                      )} ${
+                        index === questionIndex
+                          ? "ring-4 ring-yellow-300/80 ring-offset-2 ring-offset-white/50 scale-110 shadow-2xl animate-pulse"
+                          : "hover:shadow-xl"
+                      } ${index === questionIndex ? "animate-bounce" : ""}`}
+                      title={`سؤال ${index + 1}${
+                        isAnswered
+                          ? isCorrect
+                            ? " - إجابة صحيحة"
+                            : " - إجابة خاطئة"
+                          : " - لم يُجاب عليه"
+                      }`}
+                    >
+                      <span className="relative z-10 drop-shadow-sm flex items-center justify-center h-full">
+                        {index + 1}
+                        {/* Status indicators */}
+                        {isAnswered && (
+                          <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
+                            {isCorrect ? (
+                              <CheckCircle className="w-3 h-3 text-white drop-shadow-sm" />
+                            ) : (
+                              <XCircle className="w-3 h-3 text-white drop-shadow-sm" />
+                            )}
+                          </div>
+                        )}
+                      </span>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+                      {/* Progress indicator for answered questions */}
+                      {isAnswered && (
+                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/30 rounded-b-2xl">
+                          <div
+                            className={`h-full rounded-b-2xl transition-all duration-500 ${
+                              isCorrect ? "bg-green-400" : "bg-red-400"
+                            }`}
+                          ></div>
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -1567,8 +1740,24 @@ export default function Quiz({
                 </div>
               )}
 
-              {/* Feedback (kept as-is) */}
-              {submittedAnswers[questionIndex] && !selectedQuestion && (
+              {/* Send Answer button */}
+              {!submittedAnswers[questionIndex] &&
+                answers[questionIndex] !== null &&
+                (!Array.isArray(answers[questionIndex]) ||
+                  (Array.isArray(answers[questionIndex]) &&
+                    answers[questionIndex].length > 0)) && (
+                  <div className="p-4 pt-0">
+                    <button
+                      onClick={handleSubmitAnswers}
+                      className="px-6 sm:px-8 py-2 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium shadow-lg hover:shadow-xl text-sm sm:text-base"
+                    >
+                      إرسال الإجابة
+                    </button>
+                  </div>
+                )}
+
+              {/* Feedback */}
+              {submittedAnswers[questionIndex] && (
                 <div className="mt-4 space-y-2">
                   <div className="bg-green-50 border-r-4 border-green-500 p-3 rounded-xl">
                     <div className="flex items-center gap-2 mb-1">
@@ -1577,18 +1766,71 @@ export default function Quiz({
                         الإجابة الصحيحة
                       </h4>
                     </div>
-                    <p className="text-green-700 font-semibold m-0">
-                      {correctAnswer}
-                    </p>
+                    {selectedQuestion?.type === "line-match" ? (
+                      <div className="text-green-800 font-semibold">
+                        <ul className="list-disc pr-5 space-y-1">
+                          {getLineMatchCorrectPairs(selectedQuestion).map(
+                            (p, i) => (
+                              <li key={i} className="text-green-700">
+                                {p.leftText} ↔ {p.rightText}
+                              </li>
+                            )
+                          )}
+                        </ul>
+                      </div>
+                    ) : (
+                      <p className="text-green-700 font-semibold m-0">
+                        {correctAnswer}
+                      </p>
+                    )}
                   </div>
-                  {wrongAnswers.map((opt, i) => (
-                    <div
-                      key={i}
-                      className="bg-red-50 border-r-4 border-red-500 p-2 rounded-xl"
-                    >
-                      <p className="text-red-700 font-semibold m-0">❌ {opt}</p>
+                  {/* Student answer block */}
+                  <div className="bg-blue-50 border-r-4 border-blue-500 p-3 rounded-xl">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h4 className="text-blue-800 font-bold m-0">إجابتك</h4>
                     </div>
-                  ))}
+                    {selectedQuestion?.type === "line-match" ? (
+                      Array.isArray(answers[questionIndex]) &&
+                      answers[questionIndex].length > 0 ? (
+                        <ul className="list-disc pr-5 space-y-1">
+                          {answers[questionIndex].map((pair, i) => (
+                            <li
+                              key={i}
+                              className={
+                                pair?.isCorrect
+                                  ? "text-emerald-700"
+                                  : "text-rose-700"
+                              }
+                            >
+                              {pair?.leftData?.text ?? ""} ↔{" "}
+                              {pair?.rightData?.text ?? ""}{" "}
+                              {pair?.isCorrect ? "✅" : "❌"}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-blue-700 font-semibold m-0">—</p>
+                      )
+                    ) : (
+                      <p className="text-blue-700 font-semibold m-0">
+                        {getUserAnswerDisplay(
+                          selectedQuestion,
+                          answers[questionIndex]
+                        ) || "—"}
+                      </p>
+                    )}
+                  </div>
+                  {!selectedQuestion?.type &&
+                    wrongAnswers.map((opt, i) => (
+                      <div
+                        key={i}
+                        className="bg-red-50 border-r-4 border-red-500 p-2 rounded-xl"
+                      >
+                        <p className="text-red-700 font-semibold m-0">
+                          ❌ {opt}
+                        </p>
+                      </div>
+                    ))}
                 </div>
               )}
             </div>

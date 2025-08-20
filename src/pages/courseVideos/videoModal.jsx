@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Modal, Spin, Select, Tooltip } from "antd";
+import { Modal, Spin, Select, Tooltip, Popover } from "antd";
 import {
   Maximize,
   Minimize,
@@ -7,7 +7,11 @@ import {
   Play,
   Volume2,
   VolumeX,
-  Settings
+  Settings,
+  MoreHorizontal,
+  SkipBack,
+  SkipForward,
+  Loader2,
 } from "lucide-react";
 import Hls from "hls.js";
 
@@ -16,7 +20,10 @@ function VideoModal({ activeUrl, setActiveUrl }) {
   const containerRef = useRef(null);
   const hlsRef = useRef(null);
   const hideControlsTimer = useRef(null);
-  console.log("VideoModal activeUrl:", activeUrl);
+  const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
+  const [mobileVolumeOpen, setMobileVolumeOpen] = useState(false);
+  const [desktopMoreOpen, setDesktopMoreOpen] = useState(false);
+  const [desktopVolumeOpen, setDesktopVolumeOpen] = useState(false);
 
   // UI state
   const [isPlaying, setIsPlaying] = useState(false);
@@ -24,19 +31,20 @@ function VideoModal({ activeUrl, setActiveUrl }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showControls, setShowControls] = useState(true);
+  const [isBuffering, setIsBuffering] = useState(false);
 
   // Media state
   const [duration, setDuration] = useState(0);
   const [current, setCurrent] = useState(0);
   const [volume, setVolume] = useState(1);
   const [progress, setProgress] = useState(0);
-  const [currentTime, setCurrentTime] = useState('0:00');
-  const [totalTime, setTotalTime] = useState('0:00');
+  const [currentTime, setCurrentTime] = useState("0:00");
+  const [totalTime, setTotalTime] = useState("0:00");
   const [videoError, setVideoError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
 
   // Quality (HLS only)
-  const [levels, setLevels] = useState([]); // [{level, height, bitrate, label}]
+  const [levels, setLevels] = useState([]);
   const [selectedLevel, setSelectedLevel] = useState("auto");
   const [qualityEnabled, setQualityEnabled] = useState(false);
 
@@ -50,12 +58,9 @@ function VideoModal({ activeUrl, setActiveUrl }) {
   const bitrateToMbps = (bps) =>
     bps || bps === 0 ? `${(bps / 1_000_000).toFixed(1)} Mbps` : "";
 
-  // Initialize video when activeUrl changes (copied from videoHosting.js)
+  // Initialize video when activeUrl changes
   useEffect(() => {
-    console.log("VideoModal useEffect triggered with activeUrl:", activeUrl);
-    
     const video = videoRef.current;
-    console.log("VideoModal videoRef.current:", videoRef.current);
     if (!video || !activeUrl) return;
 
     let hls;
@@ -63,10 +68,11 @@ function VideoModal({ activeUrl, setActiveUrl }) {
 
     const resetState = () => {
       setProgress(0);
-      setCurrentTime('0:00');
-      setTotalTime('0:00');
+      setCurrentTime("0:00");
+      setTotalTime("0:00");
       setIsPlaying(false);
       setIsLoading(true);
+      setIsBuffering(false);
       setVideoError(null);
       setDuration(0);
       setCurrent(0);
@@ -79,13 +85,15 @@ function VideoModal({ activeUrl, setActiveUrl }) {
       const duration = video.duration;
       setDuration(duration);
       const minutes = Math.floor(duration / 60);
-      const seconds = Math.floor(duration % 60).toString().padStart(2, '0');
+      const seconds = Math.floor(duration % 60)
+        .toString()
+        .padStart(2, "0");
       setTotalTime(`${minutes}:${seconds}`);
     };
 
     const handleLoadedMetadata = () => {
-      console.log("Video loaded metadata, duration:", video.duration);
       setIsLoading(false);
+      setIsBuffering(false);
       setRetryCount(0);
       setVideoDurationFormatted();
 
@@ -97,7 +105,7 @@ function VideoModal({ activeUrl, setActiveUrl }) {
 
       if (retryCount > 0) {
         setTimeout(() => {
-          video.play().catch(() => { });
+          video.play().catch(() => {});
           video.currentTime = progress;
         }, 100);
       }
@@ -116,54 +124,51 @@ function VideoModal({ activeUrl, setActiveUrl }) {
     };
 
     const handleError = () => {
-      console.log("Video error occurred");
       setIsLoading(true);
+      setIsBuffering(false);
       retryTimeout = setTimeout(() => {
         setRetryCount((c) => c + 1);
         if (Hls.isSupported() && hls) {
           hls.loadSource(activeUrl);
           hls.attachMedia(video);
-        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
           video.src = activeUrl;
         }
       }, 2000);
     };
 
     const handlePlaying = () => {
-      console.log("Video started playing");
       setIsPlaying(true);
+      setIsBuffering(false);
     };
 
     const handlePause = () => {
-      console.log("Video paused");
       setIsPlaying(false);
+      setIsBuffering(false);
     };
 
     const handleWaiting = () => {
-      console.log("Video waiting");
-      setIsLoading(true);
+      setIsBuffering(true);
     };
 
     const handleCanPlay = () => {
-      console.log("Video can play");
       setIsLoading(false);
+      setIsBuffering(false);
     };
 
     const handleEnded = () => {
-      console.log("Video ended");
       setIsPlaying(false);
+      setIsBuffering(false);
     };
 
     // Clean previous hls
     if (hlsRef.current) {
-      console.log("Cleaning up previous HLS instance");
       hlsRef.current.destroy();
       hlsRef.current = null;
     }
 
     resetState();
 
-    // Ensure video element is properly configured
     video.volume = 1;
     video.muted = false;
     video.controls = false;
@@ -179,25 +184,20 @@ function VideoModal({ activeUrl, setActiveUrl }) {
     video.addEventListener("ended", handleEnded);
     video.addEventListener("error", handleError);
 
-       if (Hls.isSupported()) {
-         console.log("HLS is supported, initializing...");
-         hls = new Hls({ 
-           enableWorker: true,
-           debug: false
-         });
-         hlsRef.current = hls;
-         
-         // Store HLS instance on video element for quality control
-         video.hls = hls;
-         
-         hls.loadSource(activeUrl);
-         hls.attachMedia(video);
+    if (Hls.isSupported()) {
+      hls = new Hls({
+        enableWorker: true,
+        debug: false,
+      });
+      hlsRef.current = hls;
+      video.hls = hls;
+
+      hls.loadSource(activeUrl);
+      hls.attachMedia(video);
 
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        console.log("HLS manifest parsed successfully");
         video.currentTime = 0.1;
-        
-        // Setup quality levels
+
         const lvls = (hls.levels || []).map((lvl, idx) => {
           const height =
             lvl.height ||
@@ -212,43 +212,34 @@ function VideoModal({ activeUrl, setActiveUrl }) {
           return { level: idx, height, bitrate, label };
         });
 
-        // highest to lowest
         lvls.sort((a, b) => (b.height || 0) - (a.height || 0));
-
         setLevels(lvls);
         setQualityEnabled(true);
         setSelectedLevel("auto");
       });
 
       hls.on(Hls.Events.ERROR, (_event, data) => {
-        console.error("HLS error:", data);
         if (data?.fatal) {
           switch (data.type) {
             case Hls.ErrorTypes.NETWORK_ERROR:
-              console.log("Network error, restarting...");
               hls.startLoad();
               break;
             case Hls.ErrorTypes.MEDIA_ERROR:
-              console.log("Media error, recovering...");
               hls.recoverMediaError();
               break;
             default:
-              console.log("Fatal error, destroying HLS");
               hls.destroy();
               break;
           }
         }
         setIsLoading(false);
+        setIsBuffering(false);
       });
     } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-      // Safari (native HLS): no manual quality
-      console.log("Using native HLS support");
       video.src = activeUrl;
       setQualityEnabled(false);
       setSelectedLevel("auto");
     } else {
-      // MP4 or others
-      console.log("Using direct video source");
       video.src = activeUrl;
       setQualityEnabled(false);
       setSelectedLevel("auto");
@@ -269,7 +260,7 @@ function VideoModal({ activeUrl, setActiveUrl }) {
       }
       if (retryTimeout) clearTimeout(retryTimeout);
     };
-  }, [activeUrl, retryCount,  videoRef, videoRef.current]);
+  }, [activeUrl, retryCount]);
 
   // Fullscreen change tracking
   useEffect(() => {
@@ -298,17 +289,20 @@ function VideoModal({ activeUrl, setActiveUrl }) {
   // Auto-hide controls
   const startHideControlsTimer = () => {
     if (hideControlsTimer.current) clearTimeout(hideControlsTimer.current);
-    hideControlsTimer.current = setTimeout(() => setShowControls(false), 2500);
+    hideControlsTimer.current = setTimeout(() => setShowControls(false), 3000);
   };
+
   const revealControls = () => {
     setShowControls(true);
     if (!videoRef.current?.paused) startHideControlsTimer();
   };
+
   const handleMouseMove = () => revealControls();
 
   const togglePlay = async () => {
     const v = videoRef.current;
     if (!v) return;
+
     if (v.paused) {
       try {
         await v.play();
@@ -350,14 +344,27 @@ function VideoModal({ activeUrl, setActiveUrl }) {
     setCurrent(v.currentTime);
   };
 
+  const skip = (seconds) => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.currentTime = Math.max(
+      0,
+      Math.min(v.currentTime + seconds, duration || v.duration || v.currentTime)
+    );
+    setCurrent(v.currentTime);
+    revealControls();
+  };
+
   const toggleFullscreen = async () => {
     const el = containerRef.current;
     if (!el) return;
+
     const isFs =
       document.fullscreenElement ||
       document.webkitFullscreenElement ||
       document.mozFullScreenElement ||
       document.msFullscreenElement;
+
     try {
       if (!isFs) {
         if (el.requestFullscreen) await el.requestFullscreen();
@@ -375,10 +382,15 @@ function VideoModal({ activeUrl, setActiveUrl }) {
     } catch {}
   };
 
-  // Shortcuts
+  // Keyboard shortcuts
   useEffect(() => {
     if (!activeUrl) return;
+
     const onKey = (e) => {
+      // Don't trigger if user is typing in an input
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")
+        return;
+
       switch (e.key.toLowerCase()) {
         case " ":
           e.preventDefault();
@@ -390,79 +402,62 @@ function VideoModal({ activeUrl, setActiveUrl }) {
         case "f":
           toggleFullscreen();
           break;
-        case "arrowright": {
-          const v = videoRef.current;
-          if (!v) break;
-          v.currentTime = Math.min(
-            v.currentTime + 5,
-            duration || v.duration || v.currentTime
-          );
-          setCurrent(v.currentTime);
+        case "arrowright":
+          e.preventDefault();
+          skip(5);
+          break;
+        case "arrowleft":
+          e.preventDefault();
+          skip(-5);
+          break;
+        case "arrowup":
+          e.preventDefault();
+          handleVolumeChange(Math.min(1, volume + 0.1));
           revealControls();
           break;
-        }
-        case "arrowleft": {
-          const v = videoRef.current;
-          if (!v) break;
-          v.currentTime = Math.max(v.currentTime - 5, 0);
-          setCurrent(v.currentTime);
+        case "arrowdown":
+          e.preventDefault();
+          handleVolumeChange(Math.max(0, volume - 0.1));
           revealControls();
           break;
-        }
-        case "arrowup": {
-          const next = Math.min(1, volume + 0.05);
-          handleVolumeChange(next);
-          revealControls();
-          break;
-        }
-        case "arrowdown": {
-          const next = Math.max(0, volume - 0.05);
-          handleVolumeChange(next);
-          revealControls();
-          break;
-        }
         default:
           break;
       }
     };
+
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [activeUrl, duration, volume]);
 
-  // Apply quality WITHOUT restarting video (no re-init, no source reload)
+  // Apply quality
   const applyQuality = (value) => {
     setSelectedLevel(value);
     const hls = hlsRef.current;
-    if (!hls) return; // Not HLS (or Safari native) – nothing to do
+    if (!hls) return;
 
     if (value === "auto") {
-      hls.currentLevel = -1; // ABR
+      hls.currentLevel = -1;
       return;
     }
 
-    // We stored the real Hls level index in l.level
     const lvlObj = levels.find((l) => String(l.level) === String(value));
     if (!lvlObj) return;
-
-    // Seamless switch: keep currentTime; hls handles buffer/segment switching internally
     hls.currentLevel = Number(lvlObj.level);
   };
 
   const handleClose = () => {
-    console.log("Closing video modal, cleaning up...");
     setActiveUrl(null);
     const v = videoRef.current;
     if (v) {
       try {
         v.pause();
-        v.removeAttribute('src');
+        v.removeAttribute("src");
         v.load();
       } catch (error) {
         console.log("Error cleaning up video:", error);
       }
     }
     if (hlsRef.current) {
-      console.log("Destroying HLS instance");
       hlsRef.current.destroy();
       hlsRef.current = null;
     }
@@ -489,26 +484,30 @@ function VideoModal({ activeUrl, setActiveUrl }) {
       footer={null}
       width="100%"
       destroyOnClose
-      // Tailwind overrides (Modal root)
       rootClassName="!p-0"
-      className="!max-w-[min(1200px,96vw)] !w-full"
+      className="max-w-6xl !w-full  p-0"
       styles={{
-        body: { padding: 0 }
+        padding: 0,
+        content: { padding: 0 },
+        body: { padding: 0 },
+        mask: {
+          backdropFilter: "blur(8px)",
+          backgroundColor: "rgba(0,0,0,0.85)",
+        },
       }}
     >
-      {/* Force LTR for everything inside */}
       <div
         dir="ltr"
         ref={containerRef}
-        className="relative !bg-black"
+        className={`relative bg-black  py-[130px] md:py-[50px] ${
+          isFullscreen ? "overflow-visible" : "overflow-hidden"
+        } shadow-2xl`}
         onMouseMove={handleMouseMove}
         onClick={togglePlay}
         style={{
-          aspectRatio: "16 / 9",
           width: "100%",
-          maxHeight: "86vh",
+          // maxHeight: "90vh",
           userSelect: "none",
-          overflow: "hidden"
         }}
       >
         <video
@@ -517,203 +516,701 @@ function VideoModal({ activeUrl, setActiveUrl }) {
           preload="metadata"
           muted={true}
           controls={false}
-          className="block !w-full !h-full"
-          style={{ background: "black" }}
+          className={`block w-full m-auto ${
+            isFullscreen ? "absolute top-1/2  -translate-y-1/2" : ""
+          }`}
+          style={{
+            background: "linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%)",
+          }}
           onClick={(e) => e.stopPropagation()}
         />
 
-        {/* Center Play */}
-        {!isPlaying && !isLoading && (
-          <button
-            aria-label="Play"
-            onClick={(e) => {
-              e.stopPropagation();
-              togglePlay();
+        {/* Top-right Quality (Desktop/Tablet) */}
+        <div className="hidden sm:block absolute top-3 right-3 z-10">
+          <Popover
+            open={desktopMoreOpen}
+            onOpenChange={(open) => setDesktopMoreOpen(open)}
+            trigger="click"
+            placement="bottomRight"
+            getPopupContainer={() => containerRef.current || document.body}
+            overlayStyle={{ zIndex: 2147483646 }}
+            overlayInnerStyle={{
+              background: "rgba(17,24,39,0.95)",
+              padding: 12,
+              borderRadius: 12,
+              border: "1px solid rgba(255,255,255,0.1)",
             }}
-            className="inset-0 m-auto flex h-16 w-16 items-center justify-center rounded-full shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-2xl p-2 bg-blue"
-            style={{
-              top: "50%",
-              left: "50%",
-              // transform: "translate(-50%,-50%)"
-            }}
+            content={
+              <div
+                className="min-w-[220px] text-white"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="mb-1 text-xs text-white/70">Quality</div>
+                <Select
+                  size="small"
+                  disabled={!qualityEnabled}
+                  value={selectedLevel}
+                  className="!w-full [&_.ant-select-selector]:!bg-white/10 [&_.ant-select-selector]:!border-white/30 [&_.ant-select-selector]:!text-white"
+                  dropdownStyle={{
+                    backgroundColor: "rgba(31, 41, 55, 0.95)",
+                    color: "white",
+                  }}
+                  getPopupContainer={() =>
+                    containerRef.current || document.body
+                  }
+                  onChange={(v) => {
+                    applyQuality(v);
+                    setDesktopMoreOpen(false);
+                  }}
+                  options={[
+                    { value: "auto", label: activeAutoLevelLabel },
+                    ...levels.map((l) => ({
+                      value: String(l.level),
+                      label: l.label,
+                    })),
+                  ]}
+                />
+              </div>
+            }
           >
-            <Play size={28} color="#fff" />
-          </button>
-        )}
+            <button
+              aria-label="Quality options"
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+              className="grid h-9 w-9 place-items-center rounded-full bg-white/10 border border-white/20 text-white/90 transition-all duration-200 hover:bg-white/20 hover:text-white hover:scale-105 active:scale-95 focus:ring-2 focus:ring-blue-500/50"
+            >
+              <Settings size={14} />
+            </button>
+          </Popover>
+        </div>
 
-        {/* Loading */}
-        {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <Spin size="large" />
+        {/* Center Play Button with Enhanced Design */}
+        {!isPlaying && !isLoading && !isBuffering && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <button
+              aria-label="Play"
+              onClick={(e) => {
+                e.stopPropagation();
+                togglePlay();
+              }}
+              className="group relative flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 
+                         rounded-full bg-gradient-to-br from-blue-500 via-blue-600 to-purple-600
+                         shadow-2xl transition-all duration-500 ease-out
+                         hover:scale-110 hover:shadow-blue-500/30 hover:shadow-2xl
+                         active:scale-95 focus:outline-none focus:ring-4 focus:ring-blue-500/50"
+            >
+              {/* Animated ring */}
+              <div
+                className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 
+                            opacity-0 group-hover:opacity-20 transition-opacity duration-500 
+                            animate-pulse"
+              />
+
+              {/* Play icon */}
+              <Play
+                size={22}
+                className="text-white ml-1 drop-shadow-lg sm:w-8 sm:h-8"
+                fill="currentColor"
+              />
+            </button>
           </div>
         )}
 
-        {/* Controls */}
+        {/* Enhanced Loading State */}
+        {(isLoading || isBuffering) && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/20 backdrop-blur-sm">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="relative">
+                <Loader2
+                  className="w-12 h-12 sm:w-16 sm:h-16 text-blue-400 animate-spin"
+                  strokeWidth={1.5}
+                />
+                <div className="absolute inset-0 rounded-full border-2 border-blue-500/20 animate-ping" />
+              </div>
+              <div className="text-white/80 text-sm sm:text-base font-medium">
+                {isLoading ? "Loading..." : "Buffering..."}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Enhanced Controls with Better Mobile Design */}
         <div
-          className={`absolute inset-x-0 bottom-0 transition-opacity duration-300 ${
-            showControls ? "opacity-100" : "opacity-0"
+          className={`absolute inset-x-0 bottom-0 transition-all duration-500 ease-out transform ${
+            showControls
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-2"
           }`}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Glass gradient */}
+          {/* Enhanced gradient background */}
           <div
-            className="pointer-events-none"
+            className="absolute inset-0 pointer-events-none"
             style={{
-              position: "absolute",
-              inset: 0,
-              background:
-                "linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.38) 46%, rgba(0,0,0,.66) 100%)"
+              background: `linear-gradient(180deg, 
+                rgba(0,0,0,0) 0%, 
+                rgba(0,0,0,0.3) 30%, 
+                rgba(0,0,0,0.7) 70%, 
+                rgba(0,0,0,0.9) 100%)`,
             }}
           />
 
-          <div className="relative !px-4 !pt-10 !pb-3">
-            {/* Seek bar */}
-            <input
-              type="range"
-              min={0}
-              max={100}
-              step={0.1}
-              value={progress}
-              onChange={(e) => handleSeek(e.target.value)}
-              onMouseDown={() => setShowControls(true)}
-              className="w-full"
-              style={{
-                appearance: "none",
-                width: "100%",
-                height: "6px",
-                background:
-                  "linear-gradient(to right, #1677ff 0%, #1677ff " +
-                  progress +
-                  "%, rgba(255,255,255,.25) " +
-                  progress +
-                  "%, rgba(255,255,255,.25) 100%)",
-                borderRadius: 999,
-                outline: "none"
-              }}
-            />
+          <div className="relative md:px-6 pt-8 sm:pt-12 pb-4 sm:pb-6">
+            {/* Enhanced Seek Bar */}
+            <div className="relative mb-2 sm:mb-3 flex items-center gap-2">
+              {/* Time Display */}
+              <div
+                className="block select-none font-mono text-sm  
+                              text-white/90 font-semibold ml-2"
+              >
+                <span className="text-white">{currentTime}</span>
+                <span className="text-white/50 mx-1">/</span>
+                <span className="text-white/80">{totalTime}</span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                step={0.1}
+                value={progress}
+                onChange={(e) => handleSeek(e.target.value)}
+                onMouseDown={() => setShowControls(true)}
+                className="w-full h-1 bg-transparent flex-1 appearance-none cursor-pointer"
+                style={{
+                  background: `linear-gradient(to right, 
+                    #3b82f6 0%, 
+                    #3b82f6 ${progress}%, 
+                    rgba(255,255,255,0.2) ${progress}%, 
+                    rgba(255,255,255,0.2) 100%)`,
+                  borderRadius: "999px",
+                }}
+              />
 
-             {/* Bottom row */}
-             <div className="mt-3 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4 rounded-xl border border-white/10 bg-white/5 px-2 sm:px-3 py-2 text-white shadow-xl backdrop-blur-md">
-               {/* Left */}
-               <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto justify-center sm:justify-start">
-                 {/* Play / Pause */}
-                 <button
-                   aria-label={isPlaying ? "Pause" : "Play"}
-                   onClick={togglePlay}
-                   className="grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-full border border-white/15 bg-white/10 transition
-                  hover:scale-105 hover:bg-white/15 active:scale-95
-                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black/30"
-                 >
-                   {isPlaying ? <Pause size={16} className="sm:w-[18px] sm:h-[18px]" /> : <Play size={16} className="sm:w-[18px] sm:h-[18px]" />}
-                 </button>
+              {/* Custom slider thumb */}
+              <style jsx>{`
+                input[type="range"]::-webkit-slider-thumb {
+                  appearance: none;
+                  width: 16px;
+                  height: 16px;
+                  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+                  border-radius: 50%;
+                  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+                  transition: all 0.2s ease;
+                }
+                input[type="range"]::-webkit-slider-thumb:hover {
+                  width: 20px;
+                  height: 20px;
+                  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
+                }
+              `}</style>
+            </div>
 
-                 {/* Divider */}
-                 <span className="hidden h-4 sm:h-5 w-px shrink-0 bg-white/10 md:block" />
+            {/* Enhanced Control Bar */}
+            <div
+              className="flex flex-row items-center justify-between gap-4 
+                          rounded-2xl border border-white/10 bg-black/40 backdrop-blur-xl
+                          px-4 sm:px-6 py-3 sm:py-4 shadow-2xl"
+            >
+              {/* Left Controls */}
+              <div
+                dir=""
+                className="flex items-center gap-3 sm:gap-4 w-full lg:w-auto justify-center lg:justify-start"
+              >
+                {/* Skip Back (Mobile) */}
+                <button
+                  aria-label="Skip back 10 seconds"
+                  onClick={() => skip(-10)}
+                  className="lg:hidden grid h-10 w-10 place-items-center rounded-full 
+                           bg-white/10 border border-white/20 text-white
+                           transition-all duration-200 hover:bg-white/20 hover:scale-105 
+                           active:scale-95 focus:ring-2 focus:ring-blue-500/50"
+                >
+                  <SkipBack size={16} />
+                </button>
 
-                 {/* Volume */}
-                 <div className="flex items-center gap-1 sm:gap-2">
-                   <button
-                     aria-label={isMuted ? "Unmute" : "Mute"}
-                     onClick={toggleMute}
-                     className="grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-full border border-white/15 bg-white/10 transition
-                    hover:scale-105 hover:bg-white/15 active:scale-95
-                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black/30"
-                   >
-                     {isMuted || volume === 0 ? (
-                       <VolumeX size={16} className="sm:w-[18px] sm:h-[18px]" />
-                     ) : (
-                       <Volume2 size={16} className="sm:w-[18px] sm:h-[18px]" />
-                     )}
-                   </button>
+                {/* Play/Pause */}
+                <button
+                  aria-label={isPlaying ? "Pause" : "Play"}
+                  onClick={togglePlay}
+                  className="group relative  h-12 md:grid hidden w-12 sm:h-14 sm:w-14 place-items-center 
+                           rounded-full bg-gradient-to-br from-blue-500 to-blue-600
+                           border-2 border-blue-400/50 text-white shadow-lg
+                           transition-all duration-300 hover:scale-110 hover:shadow-blue-500/30
+                           active:scale-95 focus:ring-2 focus:ring-blue-500/50"
+                >
+                  <div
+                    className="absolute inset-0 rounded-full bg-white/10 opacity-0 
+                                group-hover:opacity-100 transition-opacity duration-200"
+                  />
+                  {isPlaying ? (
+                    <Pause size={16} className="sm:w-5 sm:h-5" />
+                  ) : (
+                    <Play
+                      size={16}
+                      className="sm:w-5 sm:h-5 ml-0.5"
+                      fill="currentColor"
+                    />
+                  )}
+                </button>
 
-                   <input
-                     type="range"
-                     min={0}
-                     max={1}
-                     step={0.01}
-                     value={isMuted ? 0 : volume}
-                     onChange={(e) =>
-                       handleVolumeChange(parseFloat(e.target.value))
-                     }
-                     className="slider w-16 sm:w-24 md:w-36"
-                     style={{
-                       appearance: "none",
-                       height: 4,
-                       background: `linear-gradient(to right, #fff 0%, #fff ${
-                         isMuted ? 0 : volume * 100
-                       }%, rgba(255,255,255,.25) ${
-                         isMuted ? 0 : volume * 100
-                       }%, rgba(255,255,255,.25) 100%)`,
-                       borderRadius: 999,
-                       outline: "none"
-                     }}
-                   />
-                 </div>
+                {/* Skip Forward (Mobile) */}
+                <button
+                  aria-label="Skip forward 10 seconds"
+                  onClick={() => skip(10)}
+                  className="lg:hidden grid h-10 w-10 place-items-center rounded-full 
+                           bg-white/10 border border-white/20 text-white
+                           transition-all duration-200 hover:bg-white/20 hover:scale-105 
+                           active:scale-95 focus:ring-2 focus:ring-blue-500/50"
+                >
+                  <SkipForward size={16} />
+                </button>
 
-                 {/* Time */}
-                 <div className="select-none tabular-nums text-xs font-semibold text-white/90 sm:text-sm">
-                   {currentTime} <span className="text-white/50">/</span>{" "}
-                   {totalTime}
-                 </div>
-               </div>
+                {/* Desktop Skip Controls */}
+                <div className="hidden lg:flex items-center gap-2">
+                  <div className="w-px h-6 bg-white/20 mx-2" />
+                  <button
+                    aria-label="Skip back 10 seconds"
+                    onClick={() => skip(-10)}
+                    className="grid h-10 w-10 place-items-center rounded-full 
+                             bg-white/10 border border-white/20 text-white/90
+                             transition-all duration-200 hover:bg-white/20 hover:text-white 
+                             hover:scale-105 active:scale-95 focus:ring-2 focus:ring-blue-500/50"
+                  >
+                    <SkipBack size={16} />
+                  </button>
+                  <button
+                    aria-label="Skip forward 10 seconds"
+                    onClick={() => skip(10)}
+                    className="grid h-10 w-10 place-items-center rounded-full 
+                             bg-white/10 border border-white/20 text-white/90
+                             transition-all duration-200 hover:bg-white/20 hover:text-white 
+                             hover:scale-105 active:scale-95 focus:ring-2 focus:ring-blue-500/50"
+                  >
+                    <SkipForward size={16} />
+                  </button>
+                </div>
 
-               {/* Right */}
-               <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-center sm:justify-end">
-                 <Tooltip
-                   title={
-                     qualityEnabled
-                       ? "Select quality (A to toggle Auto)"
-                       : "Quality selection unavailable on this source"
-                   }
-                 >
-                   <div className="flex items-center gap-1 sm:gap-2">
-                     <Settings size={16} className="text-white/90 sm:w-[18px] sm:h-[18px]" />
-                     <Select
-                       size="small"
-                       disabled={!qualityEnabled}
-                       value={selectedLevel}
-                       className="!min-w-[120px] sm:!min-w-[150px] md:!min-w-[180px] !text-left [&_.ant-select-selector]:!bg-transparent [&_.ant-select-selector]:!border-white/20
-                      [&_.ant-select-selector]:!text-white [&_.ant-select-arrow]:!text-white/80
-                      hover:[&_.ant-select-selector]:!border-white/40 !text-white"
-                       onChange={applyQuality}
-                       options={[
-                         { value: "auto", label: activeAutoLevelLabel },
-                         ...levels.map((l) => ({
-                           value: String(l.level),
-                           label: l.label
-                         }))
-                       ]}
-                     />
-                   </div>
-                 </Tooltip>
+                {/* Volume Controls */}
+                <div className="hidden sm:flex items-center gap-3 ml-2">
+                  <div className="w-px h-6 bg-white/20" />
+                  <Popover
+                    open={desktopVolumeOpen}
+                    onOpenChange={(open) => setDesktopVolumeOpen(open)}
+                    trigger="click"
+                    placement="top"
+                    getPopupContainer={() =>
+                      containerRef.current || document.body
+                    }
+                    overlayStyle={{ zIndex: 2147483646 }}
+                    overlayInnerStyle={{
+                      background: "rgba(17,24,39,0.95)",
+                      padding: 12,
+                      borderRadius: 12,
+                      border: "1px solid rgba(255,255,255,0.1)",
+                    }}
+                    content={
+                      <div
+                        className="flex items-center gap-3"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          aria-label={isMuted ? "Unmute" : "Mute"}
+                          onClick={() => {
+                            toggleMute();
+                          }}
+                          className="grid h-9 w-9 place-items-center rounded-full bg-white/10 border border-white/20 hover:bg-white/20 text-white"
+                        >
+                          {isMuted || volume === 0 ? (
+                            <VolumeX size={14} />
+                          ) : (
+                            <Volume2 size={14} />
+                          )}
+                        </button>
+                        <input
+                          type="range"
+                          min={0}
+                          max={1}
+                          step={0.01}
+                          dir="ltr"
+                          value={isMuted ? 0 : volume}
+                          onChange={(e) =>
+                            handleVolumeChange(parseFloat(e.target.value))
+                          }
+                          className="w-40 h-1 bg-white/20 rounded-full appearance-none cursor-pointer"
+                          style={{
+                            background: `linear-gradient(to left, #ffffff ${
+                              isMuted ? 0 : volume * 100
+                            }%, rgba(255,255,255,0.2) ${
+                              isMuted ? 0 : volume * 100
+                            }%)`,
+                          }}
+                        />
+                      </div>
+                    }
+                  >
+                    <button
+                      aria-label={isMuted ? "Unmute" : "Mute"}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
+                      className="grid h-10 w-10 place-items-center rounded-full 
+                               bg-white/10 border border-white/20 text-white/90
+                               transition-all duration-200 hover:bg-white/20 hover:text-white 
+                               hover:scale-105 active:scale-95 focus:ring-2 focus:ring-blue-500/50"
+                    >
+                      {isMuted || volume === 0 ? (
+                        <VolumeX size={16} />
+                      ) : (
+                        <Volume2 size={16} />
+                      )}
+                    </button>
+                  </Popover>
+                </div>
+              </div>
 
-                 {/* Divider */}
-                 <span className="hidden h-4 sm:h-5 w-px shrink-0 bg-white/10 md:block" />
+              {/* Right Controls */}
+              <div className="flex items-center gap-3 sm:gap-4 w-full lg:w-auto justify-center lg:justify-end">
+                {/* Mobile: three-dots menu with Quality inside */}
+                <div className="sm:hidden">
+                  <Popover
+                    open={mobileMoreOpen}
+                    onOpenChange={(open) => setMobileMoreOpen(open)}
+                    trigger="click"
+                    placement="topRight"
+                    getPopupContainer={() =>
+                      containerRef.current || document.body
+                    }
+                    overlayStyle={{ zIndex: 2147483646 }}
+                    overlayInnerStyle={{
+                      background: "rgba(17,24,39,0.95)",
+                      padding: 12,
+                      borderRadius: 12,
+                      border: "1px solid rgba(255,255,255,0.1)",
+                    }}
+                    content={
+                      <div
+                        className="min-w-[220px] text-white"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="mb-1 text-xs text-white/70">
+                          Quality
+                        </div>
+                        <Select
+                          size="small"
+                          disabled={!qualityEnabled}
+                          value={selectedLevel}
+                          className="!w-full [&_.ant-select-selector]:!bg-white/10 [&_.ant-select-selector]:!border-white/30 [&_.ant-select-selector]:!text-white"
+                          dropdownStyle={{
+                            backgroundColor: "rgba(31, 41, 55, 0.95)",
+                            color: "white",
+                          }}
+                          getPopupContainer={() =>
+                            containerRef.current || document.body
+                          }
+                          onChange={(v) => {
+                            applyQuality(v);
+                            setMobileMoreOpen(false);
+                          }}
+                          options={[
+                            { value: "auto", label: activeAutoLevelLabel },
+                            ...levels.map((l) => ({
+                              value: String(l.level),
+                              label: l.label,
+                            })),
+                          ]}
+                        />
+                      </div>
+                    }
+                  >
+                    <button
+                      aria-label="More options"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
+                      className="grid h-10 w-10 place-items-center rounded-full bg-white/10 border border-white/20 text-white/90 transition-all duration-200 hover:bg-white/20 hover:text-white hover:scale-105 active:scale-95 focus:ring-2 focus:ring-blue-500/50"
+                    >
+                      <MoreHorizontal size={18} />
+                    </button>
+                  </Popover>
+                </div>
+                {/* Mobile Volume (popover slider) */}
+                <div className="sm:hidden">
+                  <Popover
+                    open={mobileVolumeOpen}
+                    onOpenChange={(open) => setMobileVolumeOpen(open)}
+                    trigger="click"
+                    placement="top"
+                    getPopupContainer={() =>
+                      containerRef.current || document.body
+                    }
+                    overlayStyle={{ zIndex: 2147483646 }}
+                    overlayInnerStyle={{
+                      background: "rgba(17,24,39,0.95)",
+                      padding: 12,
+                      borderRadius: 12,
+                      border: "1px solid rgba(255,255,255,0.1)",
+                    }}
+                    content={
+                      <div
+                        className="flex items-center gap-3"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          aria-label={isMuted ? "Unmute" : "Mute"}
+                          onClick={() => {
+                            toggleMute();
+                          }}
+                          className="grid h-9 w-9 place-items-center rounded-full bg-white/10 border border-white/20 hover:bg-white/20 text-white"
+                        >
+                          {isMuted || volume === 0 ? (
+                            <VolumeX size={16} />
+                          ) : (
+                            <Volume2 size={16} />
+                          )}
+                        </button>
+                        <input
+                          type="range"
+                          min={0}
+                          max={1}
+                          dir="ltr"
+                          step={0.01}
+                          value={isMuted ? 0 : volume}
+                          onChange={(e) =>
+                            handleVolumeChange(parseFloat(e.target.value))
+                          }
+                          className="w-40 h-1 bg-white/20 rounded-full appearance-none cursor-pointer"
+                          style={{
+                            background: `linear-gradient(to right, #ffffff ${
+                              isMuted ? 0 : volume * 100
+                            }%, rgba(255,255,255,0.2) ${
+                              isMuted ? 0 : volume * 100
+                            }%)`,
+                          }}
+                        />
+                      </div>
+                    }
+                  >
+                    <button
+                      aria-label={isMuted ? "Unmute" : "Mute"}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
+                      className="grid h-10 w-10 place-items-center rounded-full 
+                               bg-white/10 border border-white/20 text-white/90
+                               transition-all duration-200 hover:bg-white/20 hover:text-white 
+                               hover:scale-105 active:scale-95 focus:ring-2 focus:ring-blue-500/50"
+                    >
+                      {isMuted || volume === 0 ? (
+                        <VolumeX size={18} />
+                      ) : (
+                        <Volume2 size={18} />
+                      )}
+                    </button>
+                  </Popover>
+                </div>
 
-                 <Tooltip title="Fullscreen (F)">
-                   <button
-                     aria-label="Fullscreen"
-                     onClick={toggleFullscreen}
-                     className="grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-full border border-white/15 bg-white/10 transition
-                    hover:scale-105 hover:bg-white/15 active:scale-95
-                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black/30"
-                   >
-                     {isFullscreen ? (
-                       <Minimize size={16} className="sm:w-[18px] sm:h-[18px]" />
-                     ) : (
-                       <Maximize size={16} className="sm:w-[18px] sm:h-[18px]" />
-                     )}
-                   </button>
-                 </Tooltip>
-               </div>
-             </div>
+                {/* Quality Settings (desktop/tablet) */}
+                <Tooltip
+                  title={
+                    qualityEnabled ? "Video Quality" : "Quality unavailable"
+                  }
+                  getPopupContainer={() =>
+                    containerRef.current || document.body
+                  }
+                >
+                  <div className="hidden sm:flex items-center gap-2 sm:gap-3">
+                    <Settings
+                      size={14}
+                      className="text-white/80 sm:w-5 sm:h-5"
+                    />
+                    <Select
+                      size="small"
+                      disabled={!qualityEnabled}
+                      value={selectedLevel}
+                      className="!min-w-[100px] sm:!min-w-[140px] lg:!min-w-[180px]
+                               [&_.ant-select-selector]:!bg-white/10 
+                               [&_.ant-select-selector]:!border-white/30
+                               [&_.ant-select-selector]:!text-white 
+                               [&_.ant-select-arrow]:!text-white/80
+                               hover:[&_.ant-select-selector]:!border-white/50
+                               [&_.ant-select-selector]:!backdrop-blur-sm"
+                      popupClassName="[&_.ant-select-item]:!text-white [&_.ant-select-item]:!bg-gray-800 
+                                     [&_.ant-select-item-option-selected]:!bg-blue-600"
+                      dropdownStyle={{
+                        backgroundColor: "rgba(31, 41, 55, 0.95)",
+                        backdropFilter: "blur(12px)",
+                        border: "1px solid rgba(255, 255, 255, 0.1)",
+                        borderRadius: "12px",
+                      }}
+                      getPopupContainer={() =>
+                        containerRef.current || document.body
+                      }
+                      onChange={applyQuality}
+                      options={[
+                        { value: "auto", label: activeAutoLevelLabel },
+                        ...levels.map((l) => ({
+                          value: String(l.level),
+                          label: l.label,
+                        })),
+                      ]}
+                    />
+                  </div>
+                </Tooltip>
+
+                {/* Divider (hide when no desktop quality) */}
+                <div className="hidden sm:block w-px h-6 bg-white/20" />
+
+                {/* Fullscreen */}
+                <Tooltip
+                  title={`${isFullscreen ? "Exit" : "Enter"} Fullscreen (F)`}
+                  getPopupContainer={() =>
+                    containerRef.current || document.body
+                  }
+                >
+                  <button
+                    aria-label="Toggle Fullscreen"
+                    onClick={toggleFullscreen}
+                    className="grid h-10 w-10 sm:h-11 sm:w-11 place-items-center rounded-full 
+                             bg-white/10 border border-white/20 text-white/90
+                             transition-all duration-200 hover:bg-white/20 hover:text-white 
+                             hover:scale-105 active:scale-95 focus:ring-2 focus:ring-blue-500/50"
+                  >
+                    {isFullscreen ? (
+                      <Minimize size={16} className="sm:w-5 sm:h-5" />
+                    ) : (
+                      <Maximize size={16} className="sm:w-5 sm:h-5" />
+                    )}
+                  </button>
+                </Tooltip>
+              </div>
+            </div>
+
+            {/* Mobile Time Display hidden (moved beside controls) */}
+            <div className="hidden">
+              <div
+                className="select-none font-mono text-sm text-white/90 font-semibold 
+                            px-3 py-1 rounded-full bg-black/50 backdrop-blur-sm"
+              >
+                <span className="text-white">{currentTime}</span>
+                <span className="text-white/50 mx-2">•</span>
+                <span className="text-white/80">{totalTime}</span>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Keep controls visible on pause */}
-        {!isPlaying && !isLoading && (
+        {!isPlaying && !isLoading && !isBuffering && (
           <div className="absolute inset-0" onMouseMove={handleMouseMove} />
         )}
+
+        {/* Custom CSS for enhanced styling */}
+        <style jsx>{`
+          /* Enhanced range slider styling */
+          input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+          }
+
+          input[type="range"]::-webkit-slider-track {
+            background: transparent;
+            height: 100%;
+          }
+
+          input[type="range"]::-moz-range-track {
+            background: transparent;
+            height: 100%;
+            border: none;
+          }
+
+          input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+          }
+
+          input[type="range"]::-webkit-slider-thumb:hover {
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.6);
+            border-color: rgba(255, 255, 255, 0.5);
+          }
+
+          input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          input[type="range"]::-moz-range-thumb:hover {
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.6);
+            border-color: rgba(255, 255, 255, 0.5);
+          }
+
+          /* Enhanced scrollbar for quality dropdown */
+          .ant-select-dropdown::-webkit-scrollbar {
+            width: 6px;
+          }
+
+          .ant-select-dropdown::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+          }
+
+          .ant-select-dropdown::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+          }
+
+          .ant-select-dropdown::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+          }
+
+          /* Smooth transitions for all interactive elements */
+          button,
+          input,
+          .ant-select {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          /* Enhanced modal backdrop */
+          .ant-modal-mask {
+            backdrop-filter: blur(8px);
+            background: rgba(0, 0, 0, 0.85);
+          }
+
+          /* Remove focus outline on video element */
+          video:focus {
+            outline: none;
+          }
+
+          /* Ensure proper touch targets on mobile */
+          @media (max-width: 640px) {
+            button {
+              min-width: 44px;
+              min-height: 44px;
+            }
+          }
+        `}</style>
       </div>
     </Modal>
   );

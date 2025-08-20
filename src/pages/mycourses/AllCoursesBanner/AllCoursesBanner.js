@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import './allcoursesbanner.css';
-import { star } from './svg';
-import { decryptData } from '../../../utils/decrypt';
+import React, { useState, useEffect } from "react";
+import "./allcoursesbanner.css";
+import { star } from "./svg";
+import { decryptData } from "../../../utils/decrypt";
 
 const AllCoursesBanner = ({ selectedTopic, setSelectedTopic }) => {
   const [userData, setUserData] = useState(null);
   const [coursesType, setCoursesType] = useState([]);
-  const [selectedType, setSelectedType] = useState('');
+  const [selectedType, setSelectedType] = useState("");
 
   const topics = [
     { id: 1, label: "General Surgery" },
@@ -15,7 +15,7 @@ const AllCoursesBanner = ({ selectedTopic, setSelectedTopic }) => {
     { id: 4, label: "Revisions" },
     { id: 5, label: "Operative" },
     { id: 6, label: "Anatomy" },
-    { id: 7, label: "Clinical" }
+    { id: 7, label: "Clinical" },
   ];
 
   useEffect(() => {

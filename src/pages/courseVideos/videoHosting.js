@@ -461,8 +461,9 @@ const VideoPlayerWithQuiz = ({
   }, [videoUrl]);
 
   return (
-    <div key={videoUrl} className="!w-[100%] videoPalyerContainer  mx-auto overflow-hidden bg-gray-900 shadow-2xl rounded-2xl !z-[9999] relative ">
+    <div  key={videoUrl} className="!w-[100%] videoPalyerContainer  mx-auto overflow-hidden bg-gray-900 shadow-2xl rounded-2xl !z-[9999] relative ">
       <div
+        dir='ltr'
         ref={containerRef}
         className="relative overflow-hidden bg-black rounded-t-2xl group !max-h-[130%]"
       >
@@ -696,31 +697,162 @@ const VideoPlayerWithQuiz = ({
           ))
           : null}
       </div>
-      <div className=''>
-        <div className='rounded-2xl  border-white/10  backdrop-blur-md p-3 sm:p-4'>
-          <div className='flex items-center justify-between mb-2 sm:mb-3'>
-            <span className='text-white font-bold text-sm sm:text-base'>أنشطة إضافية</span>
-          </div>
-          <div className='grid grid-cols-2 gap-2 sm:gap-3'>
-            <button onClick={() => { setActiveUrl(currentVideo?.words); console.log("currentVideo", currentVideo) }} className={`group cursor-pointer rounded-xl sm:rounded-2xl p-3 sm:p-4 text-white shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-[0.99] bg-gradient-to-r from-rose-500 via-red-500 to-orange-500 flex items-center justify-center gap-2 ${videoUrl === (activityVideos.words || videoUrl) ? 'ring-2 ring-white/60' : ''}`}>
-              <Mic className='opacity-90 group-hover:opacity-100' />
-              <span className='font-semibold text-xs sm:text-sm'>تسميع الكلمات</span>
-            </button>
-            <button onClick={() => setActiveUrl(currentVideo?.tune)} className={`group cursor-pointer rounded-xl sm:rounded-2xl p-3 sm:p-4 text-white shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-[0.99] bg-gradient-to-r from-sky-500 via-indigo-500 to-purple-500 flex items-center justify-center gap-2 ${videoUrl === (activityVideos.tune || videoUrl) ? 'ring-2 ring-white/60' : ''}`}>
-              <Music2 className='opacity-90 group-hover:opacity-100' />
-              <span className='font-semibold text-xs sm:text-sm'>لحن الأغنية</span>
-            </button>
-            <button onClick={() => setActiveUrl(currentVideo?.solve)} className={`group col-span-1 cursor-pointer rounded-xl sm:rounded-2xl p-3 sm:p-4 text-white shadow-lg transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] bg-gradient-to-r from-emerald-500 via-teal-500 to-green-500 flex items-center justify-center gap-2 ${videoUrl === (activityVideos.solve || videoUrl) ? 'ring-2 ring-white/60' : ''}`}>
-              <Sparkles className='opacity-90 group-hover:opacity-100' />
-              <span className='font-semibold text-xs sm:text-sm'>حل مع الفلاح</span>
-            </button>
-            <button onClick={() => window.open(activityVideos.test || videoUrl, '_blank')} className={`group col-span-1 cursor-pointer rounded-xl sm:rounded-2xl p-3 sm:p-4 text-white shadow-lg transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] bg-gradient-to-r from-emerald-500 via-teal-500 to-green-500 flex items-center justify-center gap-2 ${videoUrl === (activityVideos.test || videoUrl) ? 'ring-2 ring-white/60' : ''}`}>
-              <Sparkles className='opacity-90 group-hover:opacity-100' />
-              <span className='font-semibold text-xs sm:text-sm'> اختبر نفسك </span>
-            </button>
-          </div>
+      <div className="relative m-3 rounded-3xl border border-white/20 backdrop-blur-xl bg-gradient-to-br from-black/95 via-gray-900/90 to-black/95 p-4 sm:p-6 shadow-2xl overflow-hidden">
+  {/* Decorative Background Elements */}
+  <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 via-transparent to-blue-600/5 pointer-events-none"></div>
+  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-pink-500/10 via-purple-500/5 to-transparent rounded-full -translate-y-16 translate-x-16 pointer-events-none"></div>
+  <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-blue-500/10 via-cyan-500/5 to-transparent rounded-full translate-y-12 -translate-x-12 pointer-events-none"></div>
+
+  {/* Enhanced Header */}
+  <div className="relative flex items-center justify-between mb-6">
+    <div className="flex items-center gap-3">
+      <div className="w-1 h-6 bg-gradient-to-b from-blue-400 to-purple-500 rounded-full"></div>
+      <span className="text-white font-bold text-lg sm:text-xl bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent drop-shadow-sm">
+        أنشطة إضافية
+      </span>
+    </div>
+    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+      <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 animate-pulse"></div>
+    </div>
+  </div>
+
+  {/* Enhanced Buttons Grid */}
+  <div className="grid  grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+    {/* تسميع الكلمات */}
+    <div className="relative group">
+      <button
+        onClick={() => {
+          setActiveUrl(currentVideo?.words);
+          console.log("currentVideo", currentVideo);
+        }}
+        className={`relative w-full cursor-pointer rounded-2xl sm:rounded-3xl px-4 py-4 sm:px-5 sm:py-5 text-white shadow-lg transition-all duration-500 hover:scale-105 active:scale-95 overflow-hidden
+        bg-gradient-to-br from-rose-500 via-red-500 to-orange-500 hover:from-rose-400 hover:via-red-400 hover:to-orange-400
+        flex flex-col items-center justify-center gap-3 text-center min-h-[100px] sm:min-h-[120px] ${
+          videoUrl === activityVideos.words 
+            ? "ring-4 ring-white/60 ring-offset-2 ring-offset-black shadow-2xl scale-105" 
+            : "hover:shadow-xl"
+        }`}
+      >
+        {/* Shimmer Effect */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+        
+        {/* Icon with Enhanced Animation */}
+        <div className="relative">
+          <Mic className="w-6 h-6 sm:w-8 sm:h-8 opacity-90 group-hover:opacity-100 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 drop-shadow-sm" />
+          <div className="absolute -inset-2 bg-white/10 rounded-full opacity-0 group-hover:opacity-100 animate-ping transition-opacity duration-300"></div>
         </div>
+        
+        <span className="relative font-bold text-sm sm:text-base whitespace-nowrap drop-shadow-sm">تسميع الكلمات</span>
+        
+        {/* Active Indicator */}
+        {videoUrl === activityVideos.words && (
+          <div className="absolute top-2 right-2 w-3 h-3 bg-white rounded-full animate-pulse shadow-lg"></div>
+        )}
+      </button>
+    </div>
+
+    {/* لحن الأغنية */}
+    <div className="relative group">
+      <button
+        onClick={() => setActiveUrl(currentVideo?.tune)}
+        className={`relative w-full cursor-pointer rounded-2xl sm:rounded-3xl px-4 py-4 sm:px-5 sm:py-5 text-white shadow-lg transition-all duration-500 hover:scale-105 active:scale-95 overflow-hidden
+        bg-gradient-to-br from-sky-500 via-indigo-500 to-purple-500 hover:from-sky-400 hover:via-indigo-400 hover:to-purple-400
+        flex flex-col items-center justify-center gap-3 min-h-[100px] sm:min-h-[120px] ${
+          videoUrl === activityVideos.tune 
+            ? "ring-4 ring-white/60 ring-offset-2 ring-offset-black shadow-2xl scale-105" 
+            : "hover:shadow-xl"
+        }`}
+      >
+        {/* Shimmer Effect */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+        
+        {/* Icon with Enhanced Animation */}
+        <div className="relative">
+          <Music2 className="w-6 h-6 sm:w-8 sm:h-8 opacity-90 group-hover:opacity-100 transition-all duration-300 group-hover:scale-110 group-hover:rotate-12 drop-shadow-sm" />
+          <div className="absolute -inset-2 bg-white/10 rounded-full opacity-0 group-hover:opacity-100 animate-ping transition-opacity duration-300"></div>
+        </div>
+        
+        <span className="relative font-bold text-sm sm:text-base whitespace-nowrap drop-shadow-sm">لحن الأغنية</span>
+        
+        {/* Active Indicator */}
+        {videoUrl === activityVideos.tune && (
+          <div className="absolute top-2 right-2 w-3 h-3 bg-white rounded-full animate-pulse shadow-lg"></div>
+        )}
+      </button>
+    </div>
+
+    {/* حل مع الفلاح */}
+    <div className="relative group">
+      <button
+        onClick={() => setActiveUrl(currentVideo?.solve)}
+        className={`relative w-full cursor-pointer rounded-2xl sm:rounded-3xl px-4 py-4 sm:px-5 sm:py-5 text-white shadow-lg transition-all duration-500 hover:scale-105 active:scale-95 overflow-hidden
+        bg-gradient-to-br from-emerald-500 via-teal-500 to-green-500 hover:from-emerald-400 hover:via-teal-400 hover:to-green-400
+        flex flex-col items-center justify-center gap-3 min-h-[100px] sm:min-h-[120px] ${
+          videoUrl === activityVideos.solve 
+            ? "ring-4 ring-white/60 ring-offset-2 ring-offset-black shadow-2xl scale-105" 
+            : "hover:shadow-xl"
+        }`}
+      >
+        {/* Shimmer Effect */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+        
+        {/* Icon with Enhanced Animation */}
+        <div className="relative">
+          <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 opacity-90 group-hover:opacity-100 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 drop-shadow-sm" />
+          <div className="absolute -inset-2 bg-white/10 rounded-full opacity-0 group-hover:opacity-100 animate-ping transition-opacity duration-300"></div>
+        </div>
+        
+        <span className="relative font-bold text-sm sm:text-base whitespace-nowrap drop-shadow-sm">حل مع الفلاح</span>
+        
+        {/* Active Indicator */}
+        {videoUrl === activityVideos.solve && (
+          <div className="absolute top-2 right-2 w-3 h-3 bg-white rounded-full animate-pulse shadow-lg"></div>
+        )}
+      </button>
+    </div>
+
+    {/* اختبر نفسك */}
+    {currentVideo?.exam?.exam_id && (
+      <div className="relative group">
+        <a
+          href={`/examQuestion/${currentVideo.exam.exam_id}`}
+          target="_blank"
+          className={`relative w-full cursor-pointer rounded-2xl sm:rounded-3xl px-4 py-4 sm:px-5 sm:py-5 text-white shadow-lg transition-all duration-500 hover:scale-105 active:scale-95 overflow-hidden
+          bg-gradient-to-br from-fuchsia-600 via-pink-500 to-rose-500 hover:from-fuchsia-500 hover:via-pink-400 hover:to-rose-400
+          flex flex-col items-center justify-center gap-3 min-h-[100px] sm:min-h-[120px] ${
+            videoUrl === activityVideos.test 
+              ? "ring-4 ring-white/60 ring-offset-2 ring-offset-black shadow-2xl scale-105" 
+              : "hover:shadow-xl"
+          }`}
+        >
+          {/* Shimmer Effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+          
+          {/* Icon with Enhanced Animation */}
+          <div className="relative">
+            <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 opacity-90 group-hover:opacity-100 transition-all duration-300 group-hover:scale-110 group-hover:-rotate-6 drop-shadow-sm" />
+            <div className="absolute -inset-2 bg-white/10 rounded-full opacity-0 group-hover:opacity-100 animate-ping transition-opacity duration-300"></div>
+          </div>
+          
+          <span className="relative font-bold text-sm sm:text-base whitespace-nowrap drop-shadow-sm">اختبر نفسك</span>
+          
+          {/* External Link Indicator */}
+          <div className="absolute top-2 left-2 w-4 h-4 border-2 border-white/60 rounded-sm flex items-center justify-center">
+            <div className="w-1 h-1 bg-white rounded-full"></div>
+          </div>
+          
+          {/* Active Indicator */}
+          {videoUrl === activityVideos.test && (
+            <div className="absolute top-2 right-2 w-3 h-3 bg-white rounded-full animate-pulse shadow-lg"></div>
+          )}
+        </a>
       </div>
+    )}
+  </div>
+
+  {/* Bottom Gradient Line */}
+  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+</div>
 
       <style jsx>{`
         .slider::-webkit-slider-thumb {

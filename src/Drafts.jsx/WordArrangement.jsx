@@ -131,9 +131,9 @@ const WordArrangementPuzzle = ({
     resetLevel();
   }, [currentPuzzle.correctSentence, currentPuzzle.scrambledWords]);
 
-  useMemo(() => {
-    onChange(arrangedWords);
-  }, [arrangedWords]);
+  useEffect(() => {
+    onChange?.(arrangedWords);
+  }, [arrangedWords, onChange]);
 
   // Check if arrangement is correct
   useEffect(() => {
@@ -150,15 +150,28 @@ const WordArrangementPuzzle = ({
     levelComplete,
   ]);
 
+  const multisetSubtract = (sourceArr, usedArr) => {
+    const counts = new Map();
+    for (const w of usedArr) counts.set(w, (counts.get(w) || 0) + 1);
+    const result = [];
+    for (const w of sourceArr) {
+      const c = counts.get(w) || 0;
+      if (c > 0) {
+        counts.set(w, c - 1); // استهلك تكرار واحد
+      } else {
+        result.push(w);
+      }
+    }
+    return result;
+  };
+
   // Reset current level
   const resetLevel = () => {
     if (defaultArranged.length > 0) {
       // ✅ use passed default data
       setArrangedWords([...defaultArranged]);
       setAvailableWords(
-        [...currentPuzzle.scrambledWords].filter(
-          (w) => !defaultArranged.includes(w)
-        )
+        multisetSubtract([...currentPuzzle.scrambledWords], defaultArranged)
       );
     } else {
       // ✅ fallback to normal behavior
@@ -223,6 +236,8 @@ const WordArrangementPuzzle = ({
 
   const handleDragOver = (e, zone, targetIndex = null) => {
     e.preventDefault();
+    e.stopPropagation(); // 👈 مهم
+
     e.dataTransfer.dropEffect = "move";
     setDropZoneActive(zone);
 
@@ -238,6 +253,8 @@ const WordArrangementPuzzle = ({
 
   const handleDragLeave = (e) => {
     // Only clear if we're actually leaving the drop zone
+    e.stopPropagation(); // 👈 مهم
+
     if (!e.currentTarget.contains(e.relatedTarget)) {
       setDropZoneActive(null);
       setRearrangeDropIndex(null);
@@ -246,20 +263,27 @@ const WordArrangementPuzzle = ({
 
   const handleDrop = (e, targetZone, targetIndex = null) => {
     e.preventDefault();
+    e.stopPropagation(); // 👈 prevent bubbling
     setDropZoneActive(null);
     setRearrangeDropIndex(null);
 
     if (!draggedWord || showAnswers) return;
 
-    // Handle rearrangement within arranged words
+    // move-inside arranged
     if (
       targetZone === "arranged" &&
       draggedFrom === "arranged" &&
       targetIndex !== null
     ) {
       performWordRearrangement(targetIndex);
-    } else if (draggedFrom !== targetZone) {
-      performWordMove(targetZone);
+      resetDragState(); // 👈 clear immediately
+      return;
+    }
+
+    // move between zones (with optional insert at targetIndex)
+    if (draggedFrom !== targetZone) {
+      performWordMove(targetZone, targetIndex); // 👈 pass index
+      resetDragState(); // 👈 clear immediately
     }
   };
 
@@ -337,41 +361,34 @@ const WordArrangementPuzzle = ({
     e.preventDefault();
   };
 
-  const handleTouchEnd = (e) => {
-    if (!isDragging || !draggedWord || showAnswers) {
-      resetDragState();
-      return;
-    }
+const handleTouchEnd = (e) => {
+  if (!isDragging || !draggedWord || showAnswers) { resetDragState(); return; }
 
-    const touch = e.changedTouches[0];
-    const elements = document.elementsFromPoint(touch.clientX, touch.clientY);
-    const arrangedZone = elements.find(
-      (el) => el.dataset?.dropzone === "arranged"
-    );
-    const availableZone = elements.find(
-      (el) => el.dataset?.dropzone === "available"
-    );
-    const arrangedWordElement = elements.find(
-      (el) => el.dataset?.arrangedIndex
-    );
+  const touch = e.changedTouches[0];
+  const elements = document.elementsFromPoint(touch.clientX, touch.clientY);
+  const arrangedWordElement = elements.find(el => el.dataset?.arrangedIndex);
+  const arrangedZone = elements.find(el => el.dataset?.dropzone === "arranged");
+  const availableZone = elements.find(el => el.dataset?.dropzone === "available");
 
-    // Handle rearrangement within arranged words
-    if (arrangedWordElement && draggedFrom === "arranged") {
-      const targetIndex = parseInt(arrangedWordElement.dataset.arrangedIndex);
-      performWordRearrangement(targetIndex);
+  if (arrangedWordElement) {
+    const idx = parseInt(arrangedWordElement.dataset.arrangedIndex);
+    if (draggedFrom === "arranged") {
+      performWordRearrangement(idx);
     } else {
-      let targetZone = null;
-      if (arrangedZone && draggedFrom !== "arranged") targetZone = "arranged";
-      if (availableZone && draggedFrom !== "available")
-        targetZone = "available";
-
-      if (targetZone) {
-        performWordMove(targetZone);
-      }
+      performWordMove("arranged", idx); // 👈 insert at index
     }
-
     resetDragState();
-  };
+    return;
+  }
+
+  let targetZone = null;
+  if (arrangedZone && draggedFrom !== "arranged") targetZone = "arranged";
+  if (availableZone && draggedFrom !== "available") targetZone = "available";
+  if (targetZone) performWordMove(targetZone, null);
+
+  resetDragState();
+};
+
 
   // Helper function to reset drag state
   const resetDragState = () => {
@@ -385,11 +402,23 @@ const WordArrangementPuzzle = ({
     setDragPosition({ x: 0, y: 0 });
   };
 
-  // Helper function to perform word movement between zones
-  const performWordMove = (targetZone) => {
+  const performWordMove = (targetZone, insertIndex = null) => {
     if (targetZone === "arranged" && draggedFrom === "available") {
+      // remove from available by index
       setAvailableWords((prev) => prev.filter((_, i) => i !== draggedIndex));
-      setArrangedWords((prev) => [...prev, draggedWord]);
+      setArrangedWords((prev) => {
+        const next = [...prev];
+        if (
+          insertIndex === null ||
+          insertIndex < 0 ||
+          insertIndex > next.length
+        ) {
+          next.push(draggedWord); // fallback append
+        } else {
+          next.splice(insertIndex, 0, draggedWord); // 👈 insert at drop index
+        }
+        return next;
+      });
     } else if (targetZone === "available" && draggedFrom === "arranged") {
       setArrangedWords((prev) => prev.filter((_, i) => i !== draggedIndex));
       setAvailableWords((prev) => [...prev, draggedWord]);
@@ -532,7 +561,7 @@ const WordArrangementPuzzle = ({
                 {currentPuzzle.gameType === "character" ? "الأحرف" : "الكلمات"}
               </button>
 
-              <button
+              {/* <button
                 onClick={toggleShowAnswers}
                 className={`text-xs md:text-lg group px-4 md:px-6 py-2 md:py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex items-center gap-2 border border-white/30 ${
                   showAnswers
@@ -542,7 +571,7 @@ const WordArrangementPuzzle = ({
               >
                 <Eye className="w-4 h-4 md:w-5 md:h-5 group-hover:scale-110 transition-transform duration-300" />
                 {showAnswers ? "إخفاء الإجابة" : "عرض الإجابة"}
-              </button>
+              </button> */}
             </div>
           </div>
 
@@ -619,7 +648,8 @@ const WordArrangementPuzzle = ({
                             ? "ring-4 ring-blue-400 ring-opacity-50 scale-110"
                             : ""
                         } ${
-                          isCorrectPosition
+                          // i made it true to to hide the wrong answers
+                          isCorrectPosition || true
                             ? "border-green-400 bg-gradient-to-r from-green-400/20 to-emerald-400/20 shadow-lg shadow-green-400/30"
                             : "border-yellow-400 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 shadow-lg shadow-yellow-400/30"
                         } backdrop-blur-sm`}
@@ -746,7 +776,7 @@ const WordArrangementPuzzle = ({
           </div>
 
           {/* Game Status */}
-          <div className="mt-8 text-center space-y-4">
+          {/* <div className="mt-8 text-center space-y-4">
             {levelComplete && !showAnswers && (
               <div className="bg-gradient-to-r from-green-400/20 to-emerald-400/20 backdrop-blur-sm border-2 border-green-400 text-white px-8 py-6 rounded-2xl text-base md:text-xl font-bold animate-bounce shadow-2xl shadow-green-400/30">
                 <div className="flex items-center justify-center gap-2">
@@ -776,7 +806,7 @@ const WordArrangementPuzzle = ({
                 </div>
               </div>
             )}
-          </div>
+          </div> */}
         </div>
       </div>
 

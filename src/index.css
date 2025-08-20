@@ -43,3 +43,42 @@ iframe#webpack-dev-server-client-overlay{
 button, input{
   border:none !important;
 }
+
+
+/* Range base */
+._video-player input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+}
+._video-player input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: transparent;
+}
+._video-player input[type="range"]::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: transparent;
+}
+/* Thumb */
+._video-player input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px; height: 16px;
+  border-radius: 999px;
+  background: #fff;
+  border: 2px solid rgba(0,0,0,.25);
+  margin-top: -5px; /* center on 6px track */
+  box-shadow: 0 2px 8px rgba(0,0,0,.35);
+}
+._video-player input[type="range"]::-moz-range-thumb {
+  width: 16px; height: 16px;
+  border-radius: 999px;
+  background: #fff;
+  border: 2px solid rgba(0,0,0,.25);
+  box-shadow: 0 2px 8px rgba(0,0,0,.35);
+}
+/* Thumb hover/focus */
+._video-player input[type="range"]:hover::-webkit-slider-thumb { transform: scale(1.04); }
+._video-player input[type="range"]:active::-webkit-slider-thumb { transform: scale(0.98); }

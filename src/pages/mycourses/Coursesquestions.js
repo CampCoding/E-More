@@ -8,7 +8,7 @@ import "./maincourse.css";
 import { getCourses } from "./functions/getAll";
 import { useDispatch } from "react-redux";
 import ContentLoader from "react-content-loader";
-import { decryptData } from '../../utils/decrypt';
+import { decryptData } from "../../utils/decrypt";
 
 const Coursesquestions = () => {
   const navigate = useNavigate();
@@ -32,12 +32,12 @@ const Coursesquestions = () => {
 
   // Fun colors for course cards
   const cardColors = [
-    'from-pink-400 to-blue-500',
-    'from-blue-400 to-cyan-500',
-    'from-green-400 to-emerald-500',
-    'from-yellow-400 to-orange-500',
-    'from-red-400 to-pink-500',
-    'from-indigo-400 to-blue-500'
+    "from-pink-400 to-blue-500",
+    "from-blue-400 to-cyan-500",
+    "from-green-400 to-emerald-500",
+    "from-yellow-400 to-orange-500",
+    "from-red-400 to-pink-500",
+    "from-indigo-400 to-blue-500",
   ];
 
   const getRandomColor = (index) => cardColors[index % cardColors.length];
@@ -81,31 +81,40 @@ const Coursesquestions = () => {
           </p>
         </div>
 
-        <div className="allcourses">
-          <div className="mb-8">
+        <div className="allcourses !bg-transparent">
+          {/* <div className="mb-8">
             <AllCoursesBanner
               selectedTopic={selectedTopic}
               setSelectedTopic={setSelectedTopic}
             />
-          </div>
+          </div> */}
 
-          <div className="!p-3">
+          <div className="!p-3 container">
             {!courses ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[1, 2, 3].map((i) => (
                   <div
                     key={i}
-                    className="bg-white rounded-3xl shadow-lg p-6 animate-pulse"
+                    className=" rounded-3xl shadow-lg p-6 animate-pulse"
                   >
                     <div className="w-full h-48 bg-gradient-to-r from-gray-200 to-gray-300 rounded-2xl mb-4"></div>
                     <div className="h-6 bg-gradient-to-r from-gray-200 to-gray-300 rounded-full mb-3"></div>
                     <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded-full mb-2"></div>
                     <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded-full w-3/4"></div>
+                    <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded-full w-3/4"></div>
                   </div>
                 ))}
               </div>
             ) : courses && courses?.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 !min-w-[100%]">
+              <div
+                className={`grid gap-6 !min-w-[100%]  grid-cols-1 md:grid-cols-2  ${
+                  courses.length === 3
+                    ? "lg:grid-cols-3"
+                    : courses.length >= 4
+                    ? "lg:grid-cols-4"
+                    : ""
+                }`}
+              >
                 {courses.map((item, index) => {
                   return (
                     <div

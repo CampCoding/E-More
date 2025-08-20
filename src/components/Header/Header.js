@@ -132,8 +132,7 @@ const Header = () => {
                     )}
                   </AnimatePresence>
                 </div>
-
-                <motion.button
+                  <motion.button
                   whileHover={{ scale: 1.1 }}
                   onClick={() => {
                     setShowMobileMenu(!showMobileMenu);
@@ -151,6 +150,18 @@ const Header = () => {
                 <Link to="/login" className="text-white hover:text-gray-300">
                   تسجيل الدخول
                 </Link>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  onClick={() => {
+                    setShowMobileMenu(!showMobileMenu);
+                  }}
+                  className="border-none mx-2 lg:hidden w-12 h-12 rounded-full flex items-center justify-center bg-white/20 text-white hover:bg-white/30"
+                  style={{
+                    fontFamily: "Cairo, Playpen Sans Arabic, sans-serif",
+                  }}
+                >
+                  {showMobileMenu ? <X size={20} /> : <Menu size={20} />}
+                </motion.button>
               </div>
             )}
           </div>

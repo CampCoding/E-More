@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import useGetData from "../../Hooks/ApiHooks/GET/useGetData";
 import useExams from "./useExams";
+import useGetUserData from "../../Hooks/ApiHooks/useGetUserData";
+import CoursesHero from "../AllCourses/CoursesHero";
 
 const Exams = () => {
   const [pageLoading, setPageLoading] = useState(true);
@@ -21,6 +23,8 @@ const Exams = () => {
   const navigate = (path, options) => {
     window.location.href = path;
   };
+
+  const userData = useGetUserData();
 
   const { handlePostData, data, loading } = useExams();
   useEffect(() => {
@@ -83,13 +87,15 @@ const Exams = () => {
     return gradients[index % gradients.length];
   };
 
+
+
   if (pageLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-violet-100 via-sky-100 to-emerald-100 flex items-center justify-center">
         <div className="text-center">
           <div className="text-8xl mb-6 animate-bounce">⏳</div>
           <h2 className="text-3xl font-bold text-gray-800 mb-4">
-            Loading Your Exams...
+            جاري تحميل الامتحانات...
           </h2>
           <div className="w-16 h-2 bg-gradient-to-r from-blue-400 to-blue-400 rounded-full animate-pulse mx-auto"></div>
         </div>
@@ -119,7 +125,7 @@ const Exams = () => {
           <div className="text-8xl mb-6 animate-bounce">🎓</div>
           <h1 className="text-6xl font-black mb-6">
             <span className="bg-gradient-to-r from-indigo-600 via-blue-600 to-pink-600 bg-clip-text text-transparent">
-              Your Exams
+              إمتحاناتك
             </span>
           </h1>
           {/* <div className="w-32 h-1 bg-gradient-to-r from-indigo-400 to-pink-400 mx-auto rounded-full mb-6"></div>
@@ -164,11 +170,11 @@ const Exams = () => {
                   });
                 }}
               >
-                {/* Decorative elements */}
+                {/* عناصر زخرفية */}
                 <div className="absolute top-0 right-0 w-16 h-16 bg-white/20 rounded-bl-full"></div>
                 <div className="absolute bottom-0 left-0 w-12 h-12 bg-white/20 rounded-tr-full"></div>
 
-                {/* Card Header */}
+                {/* رأس الكارت */}
                 <div
                   className={`bg-gradient-to-br ${getGradientClass(
                     index
@@ -188,7 +194,7 @@ const Exams = () => {
                   </h3>
                 </div>
 
-                {/* Card Body */}
+                {/* جسم الكارت */}
                 <div className="p-6 relative">
                   <p className="text-gray-700 mb-6 leading-relaxed font-medium">
                     {exam.exam_description}
@@ -200,10 +206,10 @@ const Exams = () => {
                         <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-full flex items-center justify-center">
                           <Clock className="w-4 h-4 text-white" />
                         </div>
-                        <span className="font-bold text-gray-700">Time</span>
+                        <span className="font-bold text-gray-700">الوقت</span>
                       </div>
                       <span className="text-blue-600 font-bold">
-                        {exam.exam_time} Min
+                        {exam.exam_time} دقيقة
                       </span>
                     </div>
 
@@ -213,7 +219,7 @@ const Exams = () => {
                           <Calendar className="w-4 h-4 text-white" />
                         </div>
                         <span className="font-bold text-gray-700">
-                          Due Date
+                          تاريخ الانتهاء
                         </span>
                       </div>
                       <span className="text-blue-600 font-bold">
@@ -229,7 +235,7 @@ const Exams = () => {
                   >
                     <div className="flex items-center justify-center gap-3">
                       <Zap className="w-5 h-5 group-hover:animate-bounce" />
-                      <span>Start Exam!</span>
+                      <span>ابدأ الامتحان</span>
                       <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </div>
                   </button>
@@ -241,16 +247,16 @@ const Exams = () => {
           <div className="text-center py-16 bg-white/80 backdrop-blur-xl rounded-3xl border-2 border-white/50 shadow-2xl">
             <div className="text-8xl mb-6 animate-bounce">📚</div>
             <h3 className="text-3xl font-bold text-gray-800 mb-4">
-              No Exams Available
+              لا توجد امتحانات متاحة
             </h3>
             <p className="text-gray-600 text-lg">
-              Check back later for new exciting exams!
+              تحقق لاحقًا للعثور على امتحانات جديدة ومثيرة!
             </p>
             <div className="mt-6">
               <button className="bg-gradient-to-r from-blue-500 to-blue-500 text-white px-8 py-3 rounded-xl font-bold hover:opacity-90 transition-opacity">
                 <div className="flex items-center justify-center gap-2">
                   <Sparkles className="w-5 h-5" />
-                  <span>Refresh Page</span>
+                  <span>تحديث الصفحة</span>
                 </div>
               </button>
             </div>

@@ -58,7 +58,7 @@ import ResetPassword from "./pages/Login/ResetPasswordForm";
 import ConfirmCode from "./pages/Login/ConfirmCodeForm";
 import NewPassword from "./pages/Login/NewPasswordForm";
 import FreeCourses from "./pages/Home/FreeCourses";
-import { decryptData } from './utils/decrypt';
+import { decryptData } from "./utils/decrypt";
 import DraftsPage from "./pages/Drafts/DraftsPage";
 import LineMatchingGame from "./Drafts.jsx/Match";
 import WordArrangementPuzzle from "./Drafts.jsx/WordArrangement";
@@ -86,7 +86,10 @@ function App() {
           <Routes>
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/line-matching" element={<LineMatchingGame />} />
-            <Route path="/word-arrangement" element={<WordArrangementPuzzle />} />
+            <Route
+              path="/word-arrangement"
+              element={<WordArrangementPuzzle />}
+            />
             <Route path="/confirm-code/:email" element={<ConfirmCode />} />
             <Route path="/new-password/:email" element={<NewPassword />} />
             <Route path="/profile" element={<Profile />} />
@@ -149,10 +152,7 @@ function App() {
                 <Route path="/allgrades/:id" element={<AllGrades />} />
                 <Route path="/exams" element={<Examslanding />} />
                 <Route path="*" element={<Home />} />
-                <Route
-                  path="/examQuestion/:id"
-                  element={<ExamQuestions  />}
-                />
+                <Route path="/examQuestion/:id" element={<ExamQuestions />} />
                 <Route
                   path="/questions"
                   element={<CoursesquestionsLanding />}
