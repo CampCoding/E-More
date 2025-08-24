@@ -103,37 +103,13 @@ const Courses = () => {
   );
 
   return (
-    <div dir="rtl" className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-blue-50 relative overflow-hidden">
+    <div dir="rtl" className=" bg-gradient-to-br from-slate-50 via-blue-50 to-blue-50 relative overflow-hidden">
       {/* Decorative Elements */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-blue-200/30 to-blue-200/30 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2"></div>
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tl from-pink-200/30 to-orange-200/30 rounded-full blur-3xl -translate-x-1/2 translate-y-1/2"></div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 relative">
-        {/* Header Section */}
-        {coursesData.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: -30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-center mb-16"
-          >
-            <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-100 to-blue-100 rounded-full mb-6">
-              <Sparkles className="w-5 h-5 text-blue-600 ml-2" />
-              <span className="text-blue-800 font-medium text-sm">
-                تجربة تعليمية متميزة
-              </span>
-            </div>
-
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent mb-6 leading-tight">
-              دورات مجانية
-            </h1>
-
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-              اكتشف دورات عالمية المستوى مصممة لتغيير رحلتك التعليمية وإطلاق
-              العنان لإمكانياتك
-            </p>
-          </motion.div>
-        )}
+    
 
         {/* Courses Grid */}
         <motion.div

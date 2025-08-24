@@ -46,7 +46,7 @@ const Header = () => {
 
   const navigationLinks = [
     { name: "الرئيسية", path: "/", icon: Home },
-    { name: "الدورات", path: "/allcourses", icon: BookOpen },
+    { name: "المناهح", path: "/allcourses", icon: BookOpen },
     { name: "الاختبارات", path: "/exams", icon: Star },
     {
       name: "بنك الأسئلة",
@@ -71,11 +71,13 @@ const Header = () => {
               whileHover={{ scale: 1.05 }}
               className="flex items-center space-x-reverse space-x-3  cursor-pointer"
             >
+              <Link to={"/"}>
               <img
                 src="https://res.cloudinary.com/dcs1nwnmm/image/upload/v1755328491/fala7_l_11zon_zjtjnn.png"
                 alt="Logo"
                 className="w-[130px] p-2 relative mr-2"
-              />
+                />
+                </Link>
             </motion.div>
 
             <nav className="hidden lg:flex items-center space-x-reverse space-x-8">
@@ -132,7 +134,7 @@ const Header = () => {
                     )}
                   </AnimatePresence>
                 </div>
-                  <motion.button
+                <motion.button
                   whileHover={{ scale: 1.1 }}
                   onClick={() => {
                     setShowMobileMenu(!showMobileMenu);

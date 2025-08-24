@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import QuizModal from '../../components/QuizModal/QuizModal';
+import { useState, useEffect, useRef } from "react";
+import QuizModal from "../../components/QuizModal/QuizModal";
 import {
   Maximize,
   Minimize,
@@ -9,12 +9,12 @@ import {
   VolumeX,
   Mic,
   Music2,
-  Sparkles
-} from 'lucide-react';
+  Sparkles,
+} from "lucide-react";
 import Hls from "hls.js";
-import './style.css';
-import "antd/dist/reset.css"
-import VideoModal from './videoModal';
+import "./style.css";
+import "antd/dist/reset.css";
+import VideoModal from "./videoModal";
 
 const VideoPlayerWithQuiz = ({
   currentQuestion,
@@ -33,18 +33,18 @@ const VideoPlayerWithQuiz = ({
   answeredQuestions,
   videoUrl,
   activityVideos = {},
-  currentVideo
+  currentVideo,
 }) => {
-  console.log("videoUrl", videoUrl)
+  console.log("videoUrl", videoUrl);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [currentTime, setCurrentTime] = useState('0:00');
-  const [totalTime, setTotalTime] = useState('0:00');
+  const [currentTime, setCurrentTime] = useState("0:00");
+  const [totalTime, setTotalTime] = useState("0:00");
   const [volume, setVolume] = useState(1);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
-  const [quality, setQuality] = useState('auto');
+  const [quality, setQuality] = useState("auto");
   const [levels, setLevels] = useState([]); // HLS quality levels
   const [qualityEnabled, setQualityEnabled] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -57,7 +57,13 @@ const VideoPlayerWithQuiz = ({
   const playerRef = useRef(null);
   const durationRef = useRef(0);
   const propsRef = useRef({
-    questions, answeredQuestions, isModalOpen, setCurrentQuestion, setIsModalOpen, setCurrentQuestions, showSuccess,
+    questions,
+    answeredQuestions,
+    isModalOpen,
+    setCurrentQuestion,
+    setIsModalOpen,
+    setCurrentQuestions,
+    showSuccess,
     showWrong,
   });
   // Use axios to POST to https://camp-coding.online/iframe.php with payload { video_url: "<your_video_url_here>" }
@@ -65,20 +71,28 @@ const VideoPlayerWithQuiz = ({
   // Helper function to get iframe src from backend
   const fetchIframeSrc = async () => {
     try {
-      const response = await axios.post('https://camp-coding.online/iframe.php', {
-        video_url: videoUrl
-      });
-      console.log(response)
+      const response = await axios.post(
+        "https://camp-coding.online/iframe.php",
+        {
+          video_url: videoUrl,
+        }
+      );
+      console.log(response);
       return response.data || null;
     } catch (error) {
-      console.error('Failed to fetch iframe src:', error);
+      console.error("Failed to fetch iframe src:", error);
       return null;
     }
   };
   useEffect(() => {
-
     propsRef.current = {
-      questions, answeredQuestions, isModalOpen, setCurrentQuestion, setIsModalOpen, setCurrentQuestions, showSuccess,
+      questions,
+      answeredQuestions,
+      isModalOpen,
+      setCurrentQuestion,
+      setIsModalOpen,
+      setCurrentQuestions,
+      showSuccess,
       showWrong,
     };
   });
@@ -86,11 +100,18 @@ const VideoPlayerWithQuiz = ({
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   const checkForQuestions = async (currentTimeInSeconds) => {
-    const { questions, answeredQuestions, isModalOpen, setCurrentQuestion, setIsModalOpen, setCurrentQuestions } = propsRef.current;
+    const {
+      questions,
+      answeredQuestions,
+      isModalOpen,
+      setCurrentQuestion,
+      setIsModalOpen,
+      setCurrentQuestions,
+    } = propsRef.current;
 
     if (Math.abs(currentTimeInSeconds - lastCheckedTime.current) < 1) {
       return;
@@ -136,7 +157,7 @@ const VideoPlayerWithQuiz = ({
       setCurrentQuestions(allNotAnsweredQuestions);
     }
   };
-  const [videoDuration, setVideoDuration] = useState(0)
+  const [videoDuration, setVideoDuration] = useState(0);
   const [activeUrl, setActiveUrl] = useState(null);
   // useEffect(() => {
   //   let script = document.querySelector('script[src="https://unpkg.com/@peertube/embed-api/build/player.min.js"]');
@@ -171,8 +192,8 @@ const VideoPlayerWithQuiz = ({
     if (videoUrl) {
       // Reset player state
       setProgress(0);
-      setCurrentTime('0:00');
-      setTotalTime('0:00');
+      setCurrentTime("0:00");
+      setTotalTime("0:00");
       setIsPlaying(false);
       setIsLoading(true);
       setVideoError(null);
@@ -182,10 +203,9 @@ const VideoPlayerWithQuiz = ({
       const minutes = Math.floor(duration / 60);
       const seconds = Math.floor(duration % 60)
         .toString()
-        .padStart(2, '0');
+        .padStart(2, "0");
       setTotalTime(`${minutes}:${seconds}`);
       const handleLoadedMetadata = () => {
-
         setIsLoading(false);
         video.muted = true;
         video.play();
@@ -194,12 +214,11 @@ const VideoPlayerWithQuiz = ({
         setRetryCount(0);
         if (retryCount > 0) {
           setTimeout(() => {
-            video.play().catch(() => { });
+            video.play().catch(() => {});
             video.currentTime = progress;
             setVideoDuration(duration);
           }, 100);
         }
-
       };
       const handleError = (e) => {
         setIsLoading(true);
@@ -211,12 +230,12 @@ const VideoPlayerWithQuiz = ({
         }, 2000);
       };
 
-      video.addEventListener('loadedmetadata', handleLoadedMetadata);
-      video.addEventListener('error', handleError);
+      video.addEventListener("loadedmetadata", handleLoadedMetadata);
+      video.addEventListener("error", handleError);
 
       return () => {
-        video.removeEventListener('loadedmetadata', handleLoadedMetadata);
-        video.removeEventListener('error', handleError);
+        video.removeEventListener("loadedmetadata", handleLoadedMetadata);
+        video.removeEventListener("error", handleError);
         if (retryTimeout) clearTimeout(retryTimeout);
       };
     }
@@ -233,7 +252,6 @@ const VideoPlayerWithQuiz = ({
         video.pause();
       }
     }
-
   };
 
   const handleProgressChange = (currentTime) => {
@@ -245,7 +263,7 @@ const VideoPlayerWithQuiz = ({
       const minutes = Math.floor(duration / 60);
       const seconds = Math.floor(duration % 60)
         .toString()
-        .padStart(2, '0');
+        .padStart(2, "0");
       setTotalTime(`${minutes}:${seconds}`);
     }
   };
@@ -258,13 +276,11 @@ const VideoPlayerWithQuiz = ({
     const pct = Math.max(0, Math.min(1, x / rect.width));
     const video = iframeRef.current;
     if (video && video.duration) {
-
       const time = pct * video.duration;
       video.currentTime = time;
       setProgress(pct * 100);
       setCurrentTime(formatTime(time));
       checkForQuestions(time);
-
     }
   };
 
@@ -303,40 +319,48 @@ const VideoPlayerWithQuiz = ({
 
   // Get current quality label
   const getCurrentQualityLabel = () => {
-    if (quality === 'auto') {
+    if (quality === "auto") {
       const video = iframeRef.current;
       if (video && video.hls && video.hls.currentLevel >= 0) {
         const currentLevel = video.hls.levels[video.hls.currentLevel];
         if (currentLevel) {
           const height = currentLevel.height;
           const bitrate = currentLevel.bitrate ?? currentLevel.attrs?.BANDWIDTH;
-          return `Auto (${height ? `${height}p` : 'Unknown'}${bitrate ? ` • ${bitrateToMbps(bitrate)}` : ''})`;
+          return `Auto (${height ? `${height}p` : "Unknown"}${
+            bitrate ? ` • ${bitrateToMbps(bitrate)}` : ""
+          })`;
         }
       }
-      return 'Auto';
+      return "Auto";
     }
-    
-    const selectedLevel = levels.find(lvl => lvl.level.toString() === quality);
-    return selectedLevel ? selectedLevel.label : 'Auto';
+
+    const selectedLevel = levels.find(
+      (lvl) => lvl.level.toString() === quality
+    );
+    return selectedLevel ? selectedLevel.label : "Auto";
   };
 
   // Handle quality change for HLS
   const handleChangeQuality = (e) => {
     const newQuality = e.target.value;
     setQuality(newQuality);
-    
+
     // Get the HLS instance from the video element
     const video = iframeRef.current;
     if (!video || !video.hls) return;
 
     const hls = video.hls;
-    
-    if (newQuality === 'auto') {
+
+    if (newQuality === "auto") {
       hls.currentLevel = -1; // Enable ABR (Adaptive Bitrate)
     } else {
       // Find the level index for the selected quality
       const levelIndex = parseInt(newQuality);
-      if (!isNaN(levelIndex) && levelIndex >= 0 && levelIndex < hls.levels.length) {
+      if (
+        !isNaN(levelIndex) &&
+        levelIndex >= 0 &&
+        levelIndex < hls.levels.length
+      ) {
         hls.currentLevel = levelIndex;
       }
     }
@@ -352,7 +376,6 @@ const VideoPlayerWithQuiz = ({
     }
   };
 
-
   useEffect(() => {
     const video = iframeRef.current;
     if (!video || !videoUrl) return;
@@ -362,8 +385,8 @@ const VideoPlayerWithQuiz = ({
 
     const resetState = () => {
       setProgress(0);
-      setCurrentTime('0:00');
-      setTotalTime('0:00');
+      setCurrentTime("0:00");
+      setTotalTime("0:00");
       setIsPlaying(false);
       setIsLoading(true);
       setVideoError(null);
@@ -373,7 +396,9 @@ const VideoPlayerWithQuiz = ({
       const duration = video.duration;
       setVideoDuration(duration);
       const minutes = Math.floor(duration / 60);
-      const seconds = Math.floor(duration % 60).toString().padStart(2, '0');
+      const seconds = Math.floor(duration % 60)
+        .toString()
+        .padStart(2, "0");
       setTotalTime(`${minutes}:${seconds}`);
     };
 
@@ -390,7 +415,7 @@ const VideoPlayerWithQuiz = ({
 
       if (retryCount > 0) {
         setTimeout(() => {
-          video.play().catch(() => { });
+          video.play().catch(() => {});
           video.currentTime = progress;
         }, 100);
       }
@@ -403,7 +428,7 @@ const VideoPlayerWithQuiz = ({
         if (Hls.isSupported() && hls) {
           hls.loadSource(videoUrl);
           hls.attachMedia(video);
-        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
           video.src = videoUrl;
         }
       }, 2000);
@@ -415,17 +440,20 @@ const VideoPlayerWithQuiz = ({
       hls = new Hls({ enableWorker: true, debug: false });
       hls.loadSource(videoUrl);
       hls.attachMedia(video);
-      
+
       // Store HLS instance on video element for quality control
       video.hls = hls;
 
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         video.currentTime = 0.1;
-        
+
         // Setup quality levels
         const lvls = (hls.levels || []).map((lvl, idx) => {
-          const height = lvl.height || 
-            (lvl.attrs && lvl.attrs.RESOLUTION && Number(lvl.attrs.RESOLUTION.split("x")[1])) || 
+          const height =
+            lvl.height ||
+            (lvl.attrs &&
+              lvl.attrs.RESOLUTION &&
+              Number(lvl.attrs.RESOLUTION.split("x")[1])) ||
             undefined;
           const bitrate = lvl.bitrate ?? lvl.attrs?.BANDWIDTH ?? undefined;
           const label = `${height ? `${height}p` : `L${idx}`}${
@@ -439,31 +467,33 @@ const VideoPlayerWithQuiz = ({
 
         setLevels(lvls);
         setQualityEnabled(lvls.length > 1);
-        setQuality('auto');
+        setQuality("auto");
       });
 
-      video.addEventListener('loadedmetadata', handleLoadedMetadata);
-      video.addEventListener('error', handleError);
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.addEventListener("loadedmetadata", handleLoadedMetadata);
+      video.addEventListener("error", handleError);
+    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
       video.src = videoUrl;
-      video.addEventListener('loadedmetadata', handleLoadedMetadata);
-      video.addEventListener('error', handleError);
+      video.addEventListener("loadedmetadata", handleLoadedMetadata);
+      video.addEventListener("error", handleError);
     }
 
     return () => {
       if (hls) {
         hls.destroy();
       }
-      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      video.removeEventListener('error', handleError);
+      video.removeEventListener("loadedmetadata", handleLoadedMetadata);
+      video.removeEventListener("error", handleError);
       if (retryTimeout) clearTimeout(retryTimeout);
     };
   }, [videoUrl]);
 
   return (
-    <div  key={videoUrl} className="!w-[100%] videoPalyerContainer  mx-auto overflow-hidden bg-gray-900 shadow-2xl rounded-2xl !z-[9999] relative ">
+    <div
+      key={videoUrl}
+      className="!w-[100%] videoPalyerContainer  mx-auto overflow-hidden bg-gray-900 shadow-2xl rounded-2xl !z-[9999] relative "
+    >
       <div
-        dir='ltr'
         ref={containerRef}
         className="relative overflow-hidden bg-black rounded-t-2xl group !max-h-[130%]"
       >
@@ -492,9 +522,7 @@ const VideoPlayerWithQuiz = ({
               handleProgressChange(current);
               setIsPlaying(!e.target.paused);
             }}
-
-            onStateChange={(e) => {
-            }}
+            onStateChange={(e) => {}}
           ></video>
           {/* <iframe src="https://player.vdocipher.com/v2/?otp=20160313versASE323l2HcuuTENhewIswTbnMsoxUo8gr0Trpmg1eJZ0vZRM0L7v&playbackInfo=eyJ2aWRlb0lkIjoiYjFlMDlkNjMxODE0MDc1NTU4Y2Y1ZDAxYjk1ZmFhZDYifQ==" style="border:0;height:360px;width:640px;max-width:100%" allowFullScreen="true" allow="encrypted-media"></iframe> */}
           {/* {isLoading && (
@@ -556,10 +584,9 @@ const VideoPlayerWithQuiz = ({
                 className="absolute w-full h-full rounded-full appearance-none cursor-pointer bg-white/20 slider"
                 dir="ltr"
                 style={{
-                  background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${progress}%, rgba(255,255,255,0.2) ${progress}%, rgba(255,255,255,0.2) 100%)`
+                  background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${progress}%, rgba(255,255,255,0.2) ${progress}%, rgba(255,255,255,0.2) 100%)`,
                 }}
               />
-
             </div>
           </div>
 
@@ -601,9 +628,11 @@ const VideoPlayerWithQuiz = ({
                   onChange={handleChangeVolume}
                   className="w-16 sm:w-20 h-1 rounded-full appearance-none bg-white/20 slider hidden sm:block"
                   style={{
-                    background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${volume * 100
-                      }%, rgba(255,255,255,0.2) ${volume * 100
-                      }%, rgba(255,255,255,0.2) 100%)`
+                    background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${
+                      volume * 100
+                    }%, rgba(255,255,255,0.2) ${
+                      volume * 100
+                    }%, rgba(255,255,255,0.2) 100%)`,
                   }}
                 />
               </div>
@@ -633,7 +662,11 @@ const VideoPlayerWithQuiz = ({
                   onChange={handleChangeQuality}
                   disabled={!qualityEnabled}
                   className="p-1.5 sm:p-2 text-xs sm:text-sm text-white transition-all duration-200 bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                  title={qualityEnabled ? "Select video quality" : "Quality selection unavailable"}
+                  title={
+                    qualityEnabled
+                      ? "Select video quality"
+                      : "Quality selection unavailable"
+                  }
                 >
                   <option value="auto">{getCurrentQualityLabel()}</option>
                   {levels.map((lvl) => (
@@ -682,177 +715,208 @@ const VideoPlayerWithQuiz = ({
 
         {isFullscreen && currentQuestions && currentQuestions?.length
           ? currentQuestions.map((question, index) => (
-            <QuizModal
-              key={question.id || index}
-              isOpen={isModalOpen && question?.open}
-              onClose={closeModal}
-              question={question}
-              selectedAnswer={selectedAnswer}
-              setSelectedAnswer={setSelectedAnswer}
-              onSubmit={onSubmitAnswer}
-              isFullscreen={false}
-              showSuccess={showSuccess}
-              showWrong={showWrong}
-            />
-          ))
+              <QuizModal
+                key={question.id || index}
+                isOpen={isModalOpen && question?.open}
+                onClose={closeModal}
+                question={question}
+                selectedAnswer={selectedAnswer}
+                setSelectedAnswer={setSelectedAnswer}
+                onSubmit={onSubmitAnswer}
+                isFullscreen={false}
+                showSuccess={showSuccess}
+                showWrong={showWrong}
+              />
+            ))
           : null}
       </div>
-      <div className="relative m-3 rounded-3xl border border-white/20 backdrop-blur-xl bg-gradient-to-br from-black/95 via-gray-900/90 to-black/95 p-4 sm:p-6 shadow-2xl overflow-hidden">
-  {/* Decorative Background Elements */}
-  <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 via-transparent to-blue-600/5 pointer-events-none"></div>
-  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-pink-500/10 via-purple-500/5 to-transparent rounded-full -translate-y-16 translate-x-16 pointer-events-none"></div>
-  <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-blue-500/10 via-cyan-500/5 to-transparent rounded-full translate-y-12 -translate-x-12 pointer-events-none"></div>
+      <div className="">
+        <div className="relative m-3 rounded-3xl border border-white/20 backdrop-blur-xl bg-gradient-to-br from-black/95 via-gray-900/90 to-black/95 p-4 sm:p-6 shadow-2xl overflow-hidden">
+          {/* Decorative Background Elements */}
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 via-transparent to-blue-600/5 pointer-events-none"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-pink-500/10 via-purple-500/5 to-transparent rounded-full -translate-y-16 translate-x-16 pointer-events-none"></div>
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-blue-500/10 via-cyan-500/5 to-transparent rounded-full translate-y-12 -translate-x-12 pointer-events-none"></div>
 
-  {/* Enhanced Header */}
-  <div className="relative flex items-center justify-between mb-6">
-    <div className="flex items-center gap-3">
-      <div className="w-1 h-6 bg-gradient-to-b from-blue-400 to-purple-500 rounded-full"></div>
-      <span className="text-white font-bold text-lg sm:text-xl bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent drop-shadow-sm">
-        أنشطة إضافية
-      </span>
-    </div>
-    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 flex items-center justify-center">
-      <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 animate-pulse"></div>
-    </div>
-  </div>
+          {/* Enhanced Header */}
+          <div className="relative flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-1 h-6 bg-gradient-to-b from-blue-400 to-purple-500 rounded-full"></div>
+              <span className="text-white font-bold text-lg sm:text-xl bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent drop-shadow-sm">
+                أنشطة إضافية
+              </span>
+            </div>
+            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+              <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 animate-pulse"></div>
+            </div>
+          </div>
 
-  {/* Enhanced Buttons Grid */}
-  <div className="grid  grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-    {/* تسميع الكلمات */}
-    <div className="relative group">
-      <button
-        onClick={() => {
-          setActiveUrl(currentVideo?.words);
-          console.log("currentVideo", currentVideo);
-        }}
-        className={`relative w-full cursor-pointer rounded-2xl sm:rounded-3xl px-4 py-4 sm:px-5 sm:py-5 text-white shadow-lg transition-all duration-500 hover:scale-105 active:scale-95 overflow-hidden
+          {/* Enhanced Buttons Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-2 gap-3 sm:gap-4">
+            {/* تسميع الكلمات */}
+            <div className="relative group">
+              <button
+              style={{
+                pointerEvents:!currentVideo?.words && "none",
+                opacity:!currentVideo?.words && ".6",
+                cursor:!currentVideo?.words &&"not-allowed"
+  
+              }}
+                onClick={() => {
+                  setActiveUrl(currentVideo?.words);
+                  console.log("currentVideo", currentVideo);
+                }}
+                className={`relative w-full cursor-pointer rounded-2xl sm:rounded-3xl px-4 py-4 sm:px-5 sm:py-5 text-white shadow-lg transition-all duration-500 hover:scale-105 active:scale-95 overflow-hidden
         bg-gradient-to-br from-rose-500 via-red-500 to-orange-500 hover:from-rose-400 hover:via-red-400 hover:to-orange-400
         flex flex-col items-center justify-center gap-3 text-center min-h-[100px] sm:min-h-[120px] ${
-          videoUrl === activityVideos.words 
-            ? "ring-4 ring-white/60 ring-offset-2 ring-offset-black shadow-2xl scale-105" 
+          videoUrl === activityVideos.words
+            ? "ring-4 ring-white/60 ring-offset-2 ring-offset-black shadow-2xl scale-105"
             : "hover:shadow-xl"
         }`}
-      >
-        {/* Shimmer Effect */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-        
-        {/* Icon with Enhanced Animation */}
-        <div className="relative">
-          <Mic className="w-6 h-6 sm:w-8 sm:h-8 opacity-90 group-hover:opacity-100 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 drop-shadow-sm" />
-          <div className="absolute -inset-2 bg-white/10 rounded-full opacity-0 group-hover:opacity-100 animate-ping transition-opacity duration-300"></div>
-        </div>
-        
-        <span className="relative font-bold text-sm sm:text-base whitespace-nowrap drop-shadow-sm">تسميع الكلمات</span>
-        
-        {/* Active Indicator */}
-        {videoUrl === activityVideos.words && (
-          <div className="absolute top-2 right-2 w-3 h-3 bg-white rounded-full animate-pulse shadow-lg"></div>
-        )}
-      </button>
-    </div>
+              >
+                {/* Shimmer Effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
 
-    {/* لحن الأغنية */}
-    <div className="relative group">
-      <button
-        onClick={() => setActiveUrl(currentVideo?.tune)}
-        className={`relative w-full cursor-pointer rounded-2xl sm:rounded-3xl px-4 py-4 sm:px-5 sm:py-5 text-white shadow-lg transition-all duration-500 hover:scale-105 active:scale-95 overflow-hidden
+                {/* Icon with Enhanced Animation */}
+                <div className="relative">
+                  <Mic className="w-6 h-6 sm:w-8 sm:h-8 opacity-90 group-hover:opacity-100 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 drop-shadow-sm" />
+                  <div className="absolute -inset-2 bg-white/10 rounded-full opacity-0 group-hover:opacity-100 animate-ping transition-opacity duration-300"></div>
+                </div>
+
+                <span className="relative font-bold text-sm sm:text-base whitespace-nowrap drop-shadow-sm">
+                  تسميع الكلمات
+                </span>
+
+                {/* Active Indicator */}
+                {videoUrl === activityVideos.words && (
+                  <div className="absolute top-2 right-2 w-3 h-3 bg-white rounded-full animate-pulse shadow-lg"></div>
+                )}
+              </button>
+            </div>
+
+            {/* لحن الأغنية */}
+            <div className="relative group">
+              <button
+                style={{
+                  pointerEvents:!currentVideo?.tune && "none",
+                  opacity:!currentVideo?.tune && ".6",
+                  cursor:!currentVideo?.tune &&"not-allowed"
+    
+                }}
+                onClick={() => setActiveUrl(currentVideo?.tune)}
+                className={`relative w-full cursor-pointer rounded-2xl sm:rounded-3xl px-4 py-4 sm:px-5 sm:py-5 text-white shadow-lg transition-all duration-500 hover:scale-105 active:scale-95 overflow-hidden
         bg-gradient-to-br from-sky-500 via-indigo-500 to-purple-500 hover:from-sky-400 hover:via-indigo-400 hover:to-purple-400
         flex flex-col items-center justify-center gap-3 min-h-[100px] sm:min-h-[120px] ${
-          videoUrl === activityVideos.tune 
-            ? "ring-4 ring-white/60 ring-offset-2 ring-offset-black shadow-2xl scale-105" 
+          videoUrl === activityVideos.tune
+            ? "ring-4 ring-white/60 ring-offset-2 ring-offset-black shadow-2xl scale-105"
             : "hover:shadow-xl"
         }`}
-      >
-        {/* Shimmer Effect */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-        
-        {/* Icon with Enhanced Animation */}
-        <div className="relative">
-          <Music2 className="w-6 h-6 sm:w-8 sm:h-8 opacity-90 group-hover:opacity-100 transition-all duration-300 group-hover:scale-110 group-hover:rotate-12 drop-shadow-sm" />
-          <div className="absolute -inset-2 bg-white/10 rounded-full opacity-0 group-hover:opacity-100 animate-ping transition-opacity duration-300"></div>
-        </div>
-        
-        <span className="relative font-bold text-sm sm:text-base whitespace-nowrap drop-shadow-sm">لحن الأغنية</span>
-        
-        {/* Active Indicator */}
-        {videoUrl === activityVideos.tune && (
-          <div className="absolute top-2 right-2 w-3 h-3 bg-white rounded-full animate-pulse shadow-lg"></div>
-        )}
-      </button>
-    </div>
+              >
+                {/* Shimmer Effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
 
-    {/* حل مع الفلاح */}
-    <div className="relative group">
-      <button
-        onClick={() => setActiveUrl(currentVideo?.solve)}
-        className={`relative w-full cursor-pointer rounded-2xl sm:rounded-3xl px-4 py-4 sm:px-5 sm:py-5 text-white shadow-lg transition-all duration-500 hover:scale-105 active:scale-95 overflow-hidden
+                {/* Icon with Enhanced Animation */}
+                <div className="relative">
+                  <Music2 className="w-6 h-6 sm:w-8 sm:h-8 opacity-90 group-hover:opacity-100 transition-all duration-300 group-hover:scale-110 group-hover:rotate-12 drop-shadow-sm" />
+                  <div className="absolute -inset-2 bg-white/10 rounded-full opacity-0 group-hover:opacity-100 animate-ping transition-opacity duration-300"></div>
+                </div>
+
+                <span className="relative font-bold text-sm sm:text-base whitespace-nowrap drop-shadow-sm">
+                  لحن الأغنية
+                </span>
+
+                {/* Active Indicator */}
+                {videoUrl === activityVideos.tune && (
+                  <div className="absolute top-2 right-2 w-3 h-3 bg-white rounded-full animate-pulse shadow-lg"></div>
+                )}
+              </button>
+            </div>
+
+            {/* حل مع الفلاح */}
+            <div className="relative group">
+              <button
+                style={{
+                  pointerEvents:!currentVideo?.solve && "none",
+                  opacity:!currentVideo?.solve && ".6",
+                  cursor:!currentVideo?.solve &&"not-allowed"
+    
+                }}
+                onClick={() => setActiveUrl(currentVideo?.solve)}
+                className={`relative w-full cursor-pointer rounded-2xl sm:rounded-3xl px-4 py-4 sm:px-5 sm:py-5 text-white shadow-lg transition-all duration-500 hover:scale-105 active:scale-95 overflow-hidden
         bg-gradient-to-br from-emerald-500 via-teal-500 to-green-500 hover:from-emerald-400 hover:via-teal-400 hover:to-green-400
         flex flex-col items-center justify-center gap-3 min-h-[100px] sm:min-h-[120px] ${
-          videoUrl === activityVideos.solve 
-            ? "ring-4 ring-white/60 ring-offset-2 ring-offset-black shadow-2xl scale-105" 
+          videoUrl === activityVideos.solve
+            ? "ring-4 ring-white/60 ring-offset-2 ring-offset-black shadow-2xl scale-105"
             : "hover:shadow-xl"
         }`}
-      >
-        {/* Shimmer Effect */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-        
-        {/* Icon with Enhanced Animation */}
-        <div className="relative">
-          <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 opacity-90 group-hover:opacity-100 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 drop-shadow-sm" />
-          <div className="absolute -inset-2 bg-white/10 rounded-full opacity-0 group-hover:opacity-100 animate-ping transition-opacity duration-300"></div>
-        </div>
-        
-        <span className="relative font-bold text-sm sm:text-base whitespace-nowrap drop-shadow-sm">حل مع الفلاح</span>
-        
-        {/* Active Indicator */}
-        {videoUrl === activityVideos.solve && (
-          <div className="absolute top-2 right-2 w-3 h-3 bg-white rounded-full animate-pulse shadow-lg"></div>
-        )}
-      </button>
-    </div>
+              >
+                {/* Shimmer Effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
 
-    {/* اختبر نفسك */}
-    {currentVideo?.exam?.exam_id && (
-      <div className="relative group">
-        <a
-          href={`/examQuestion/${currentVideo.exam.exam_id}`}
-          target="_blank"
-          className={`relative w-full cursor-pointer rounded-2xl sm:rounded-3xl px-4 py-4 sm:px-5 sm:py-5 text-white shadow-lg transition-all duration-500 hover:scale-105 active:scale-95 overflow-hidden
+                {/* Icon with Enhanced Animation */}
+                <div className="relative">
+                  <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 opacity-90 group-hover:opacity-100 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 drop-shadow-sm" />
+                  <div className="absolute -inset-2 bg-white/10 rounded-full opacity-0 group-hover:opacity-100 animate-ping transition-opacity duration-300"></div>
+                </div>
+
+                <span className="relative font-bold text-sm sm:text-base whitespace-nowrap drop-shadow-sm">
+                  حل مع الفلاح
+                </span>
+
+                {/* Active Indicator */}
+                {videoUrl === activityVideos.solve && (
+                  <div className="absolute top-2 right-2 w-3 h-3 bg-white rounded-full animate-pulse shadow-lg"></div>
+                )}
+              </button>
+            </div>
+
+            {/* اختبر نفسك */}
+            <div className="relative group" style={{
+              pointerEvents:!currentVideo?.exam?.exam_id && "none",
+              opacity:!currentVideo?.exam?.exam_id && ".6",
+              cursor:"not-allowed"
+
+            }}>
+              <a
+                href={`/examQuestion/${currentVideo?.exam?.exam_id}`}
+                target="_blank"
+                className={`relative w-full cursor-pointer rounded-2xl sm:rounded-3xl px-4 py-4 sm:px-5 sm:py-5 text-white shadow-lg transition-all duration-500 hover:scale-105 active:scale-95 overflow-hidden
           bg-gradient-to-br from-fuchsia-600 via-pink-500 to-rose-500 hover:from-fuchsia-500 hover:via-pink-400 hover:to-rose-400
           flex flex-col items-center justify-center gap-3 min-h-[100px] sm:min-h-[120px] ${
-            videoUrl === activityVideos.test 
-              ? "ring-4 ring-white/60 ring-offset-2 ring-offset-black shadow-2xl scale-105" 
+            videoUrl === activityVideos.test
+              ? "ring-4 ring-white/60 ring-offset-2 ring-offset-black shadow-2xl scale-105"
               : "hover:shadow-xl"
           }`}
-        >
-          {/* Shimmer Effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-          
-          {/* Icon with Enhanced Animation */}
-          <div className="relative">
-            <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 opacity-90 group-hover:opacity-100 transition-all duration-300 group-hover:scale-110 group-hover:-rotate-6 drop-shadow-sm" />
-            <div className="absolute -inset-2 bg-white/10 rounded-full opacity-0 group-hover:opacity-100 animate-ping transition-opacity duration-300"></div>
-          </div>
-          
-          <span className="relative font-bold text-sm sm:text-base whitespace-nowrap drop-shadow-sm">اختبر نفسك</span>
-          
-          {/* External Link Indicator */}
-          <div className="absolute top-2 left-2 w-4 h-4 border-2 border-white/60 rounded-sm flex items-center justify-center">
-            <div className="w-1 h-1 bg-white rounded-full"></div>
-          </div>
-          
-          {/* Active Indicator */}
-          {videoUrl === activityVideos.test && (
-            <div className="absolute top-2 right-2 w-3 h-3 bg-white rounded-full animate-pulse shadow-lg"></div>
-          )}
-        </a>
-      </div>
-    )}
-  </div>
+              >
+                {/* Shimmer Effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
 
-  {/* Bottom Gradient Line */}
-  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-</div>
+                {/* Icon with Enhanced Animation */}
+                <div className="relative">
+                  <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 opacity-90 group-hover:opacity-100 transition-all duration-300 group-hover:scale-110 group-hover:-rotate-6 drop-shadow-sm" />
+                  <div className="absolute -inset-2 bg-white/10 rounded-full opacity-0 group-hover:opacity-100 animate-ping transition-opacity duration-300"></div>
+                </div>
+
+                <span className="relative font-bold text-sm sm:text-base whitespace-nowrap drop-shadow-sm">
+                  اختبر نفسك
+                </span>
+
+                {/* External Link Indicator */}
+                <div className="absolute top-2 left-2 w-4 h-4 border-2 border-white/60 rounded-sm flex items-center justify-center">
+                  <div className="w-1 h-1 bg-white rounded-full"></div>
+                </div>
+
+                {/* Active Indicator */}
+                {videoUrl === activityVideos.test && (
+                  <div className="absolute top-2 right-2 w-3 h-3 bg-white rounded-full animate-pulse shadow-lg"></div>
+                )}
+              </a>
+            </div>
+          </div>
+
+          {/* Bottom Gradient Line */}
+          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+        </div>
+      </div>
 
       <style jsx>{`
         .slider::-webkit-slider-thumb {
@@ -892,8 +956,9 @@ const VideoPlayerWithQuiz = ({
         crossOrigin="anonymous"
         referrerPolicy="no-referrer"
       />
-      {activeUrl && <VideoModal activeUrl={activeUrl} setActiveUrl={setActiveUrl} />}
-
+      {activeUrl && (
+        <VideoModal activeUrl={activeUrl} setActiveUrl={setActiveUrl} />
+      )}
     </div>
   );
 };

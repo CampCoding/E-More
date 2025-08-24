@@ -18,7 +18,7 @@ import {
   Rocket,
   Diamond,
   Crown,
-  Flame
+  Flame,
 } from "lucide-react";
 
 const Footer = () => {
@@ -30,12 +30,12 @@ const Footer = () => {
     const handleMouseMove = (e) => {
       setMousePosition({
         x: (e.clientX / window.innerWidth) * 100,
-        y: (e.clientY / window.innerHeight) * 100
+        y: (e.clientY / window.innerHeight) * 100,
       });
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
   const handleSubscribe = (e) => {
@@ -55,9 +55,9 @@ const Footer = () => {
       opacity: 1,
       transition: {
         staggerChildren: 0.15,
-        delayChildren: 0.3
-      }
-    }
+        delayChildren: 0.3,
+      },
+    },
   };
 
   const itemVariants = {
@@ -68,9 +68,9 @@ const Footer = () => {
       scale: 1,
       transition: {
         duration: 0.8,
-        ease: [0.23, 1, 0.32, 1]
-      }
-    }
+        ease: [0.23, 1, 0.32, 1],
+      },
+    },
   };
 
   const socialLinks = [
@@ -79,15 +79,15 @@ const Footer = () => {
       url: "https://www.facebook.com/profile.php?id=61562063557757&mibextid=LQQJ4d",
       color: "from-blue-400 via-blue-500 to-blue-600",
       shadow: "shadow-blue-500/50",
-      name: "فيسبوك"
+      name: "فيسبوك",
     },
     {
       icon: Instagram,
       url: "https://www.instagram.com/MR.El-Fallah ?igsh=dnR3OGgwemFhZHp4",
       color: "from-red-400 via-blue-500 to-indigo-600",
       shadow: "shadow-red-500/50",
-      name: "انستغرام"
-    }
+      name: "انستغرام",
+    },
   ];
 
   const navigationLinks = [
@@ -96,15 +96,15 @@ const Footer = () => {
       name: "الدورات",
       path: "/allcourses",
       icon: BookOpen,
-      color: "text-blue-400"
+      color: "text-blue-400",
     },
     { name: "الامتحانات", path: "/exams", icon: Award, color: "text-blue-400" },
     {
       name: "بنك الأسئلة",
       path: "/questions",
       icon: Users,
-      color: "text-red-400"
-    }
+      color: "text-red-400",
+    },
   ];
 
   const achievements = [
@@ -112,44 +112,51 @@ const Footer = () => {
       number: "15 ألف+",
       label: "طالب سعيد",
       icon: Users,
-      color: "from-emerald-400 to-teal-500"
+      color: "from-emerald-400 to-teal-500",
     },
     {
       number: "750+",
       label: "دورة متخصصة",
       icon: BookOpen,
-      color: "from-blue-400 to-cyan-500"
+      color: "from-blue-400 to-cyan-500",
     },
     {
       number: "98%",
       label: "معدل النجاح",
       icon: Trophy,
-      color: "from-blue-400 to-red-500"
+      color: "from-blue-400 to-red-500",
     },
     {
       number: "24/7",
       label: "دعم فني",
       icon: Rocket,
-      color: "from-orange-400 to-red-500"
-    }
+      color: "from-orange-400 to-red-500",
+    },
   ];
 
   const features = [
     { icon: Crown, text: "جودة عالية", color: "text-yellow-400" },
     { icon: Zap, text: "تعلم سريع", color: "text-blue-400" },
     { icon: Diamond, text: "محتوى متخصص", color: "text-blue-400" },
-    { icon: Flame, text: "مواضيع رائجة", color: "text-orange-400" }
+    {
+      icon: Flame,
+      text: "إختبارات وبنوك أسئلة تفاعلية",
+      color: "text-orange-400",
+    },
   ];
 
   return (
-    <footer dir="rtl" className="relative min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-blue-900 text-white overflow-hidden">
+    <footer
+      dir="rtl"
+      className="relative min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-blue-900 text-white overflow-hidden"
+    >
       {/* Dynamic Mouse-Following Background */}
       <div
         className="absolute inset-0 opacity-30"
         style={{
           background: `radial-gradient(circle at ${100 - mousePosition.x}% ${
             mousePosition.y
-          }%, blue 0%, transparent 50%)`
+          }%, blue 0%, transparent 50%)`,
         }}
       />
 
@@ -170,17 +177,17 @@ const Footer = () => {
               y: [0, -30, 0],
               x: [0, Math.sin(i) * 20, 0],
               rotate: [0, 360],
-              scale: [1, 1.2, 1]
+              scale: [1, 1.2, 1],
             }}
             transition={{
               duration: 4 + i * 0.5,
               repeat: Infinity,
               delay: i * 0.3,
-              ease: "easeInOut"
+              ease: "easeInOut",
             }}
             style={{
               left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`
+              top: `${Math.random() * 100}%`,
             }}
           >
             <div
@@ -200,18 +207,18 @@ const Footer = () => {
               x: [-100, window.innerWidth + 100],
               y: [
                 Math.random() * window.innerHeight,
-                Math.random() * window.innerHeight
-              ]
+                Math.random() * window.innerHeight,
+              ],
             }}
             transition={{
               duration: 3,
               repeat: Infinity,
               delay: i * 2,
-              ease: "linear"
+              ease: "linear",
             }}
             style={{
               transform: "rotate(-45deg)",
-              filter: "blur(1px)"
+              filter: "blur(1px)",
             }}
           />
         ))}
@@ -223,7 +230,7 @@ const Footer = () => {
           initial="hidden"
           animate="visible"
           variants={containerVariants}
-          className="pt-20 pb-16"
+          className="pt-20 pb-10"
         >
           <div className="container mx-auto px-6">
             <motion.div variants={itemVariants} className="text-center mb-16">
@@ -244,13 +251,10 @@ const Footer = () => {
                   </motion.div>
                 ))}
               </div>
-              <p className="text-2xl text-gray-300 max-w-4xl mx-auto leading-relaxed">
-                حيث يلتقي التميز الطبي بالابتكار
-              </p>
             </motion.div>
 
             {/* Achievements Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
+            {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
               {achievements.map((achievement, index) => (
                 <motion.div
                   key={index}
@@ -276,7 +280,7 @@ const Footer = () => {
                   </div>
                 </motion.div>
               ))}
-            </div>
+            </div> */}
           </div>
         </motion.div>
 
@@ -300,20 +304,23 @@ const Footer = () => {
                       مهمتنا
                     </h3>
                     <p className="text-gray-400">
-                      تغيير التعليم الطبي
+                      تغيير أسلوب تعلم اللغة الإنجليزية
                     </p>
                   </div>
                 </div>
 
                 <p className="text-gray-300 leading-relaxed mb-8">
-                  تمكين الجيل القادم من المهنيين الطبيين من خلال التكنولوجيا المتطورة والمحتوى المنسق من قبل الخبراء وتجربة تعليمية لا مثيل لها تسد الفجوة بين النظرية والتطبيق.
+                  تمكين الجيل القادم من خلال تجربة تعليمية ممتعة تدمج بين الشرح
+                  التفاعلي، الأغاني الهادفة، والأنشطة الشيقة. نهدف إلى جعل اللغة
+                  الإنجليزية رحلة ممتعة تُنمّي المهارات وتبني الثقة، بعيدًا عن
+                  الطرق التقليدية الجافة.
                 </p>
 
                 {/* Social Media */}
                 <div className="space-y-4">
                   <h4 className="text-lg font-bold flex items-center">
                     <Sparkles className="w-5 h-5 ml-2 text-yellow-400" />
-                    تواصل وألهم
+                    تواصل معنا
                   </h4>
                   <div className="flex space-x-4 space-x-reverse">
                     {socialLinks.map((social, index) => (
@@ -339,12 +346,12 @@ const Footer = () => {
             {/* Navigation Links */}
             <motion.div variants={itemVariants}>
               <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-3xl p-8 border border-white/20 shadow-2xl h-full">
-                <h4 className="text-2xl font-bold mb-8 flex items-center">
+                {/* <h4 className="text-2xl font-bold mb-8 flex items-center">
                   <Rocket className="w-6 h-6 ml-3 text-cyan-400" />
                   <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
                     تنقل سريع
                   </span>
-                </h4>
+                </h4> */}
                 <div className="space-y-4">
                   {navigationLinks.map((link, index) => (
                     <motion.div
@@ -382,7 +389,8 @@ const Footer = () => {
                   </span>
                 </h4>
                 <p className="text-gray-300 mb-8 leading-relaxed">
-                  انضم إلى مجتمعنا الحصري واحصل على محتوى متميز، ووصول مبكر إلى الدورات، ونصائح الخبراء مباشرة في بريدك الوارد.
+                  انضم إلى مجتمعنا الحصري واحصل على محتوى متميز، ووصول مبكر إلى
+                  الدورات، ونصائح الخبراء مباشرة في بريدك الوارد.
                 </p>
 
                 <div className="space-y-4">
@@ -421,7 +429,6 @@ const Footer = () => {
                       <>
                         <Send className="w-5 h-5 ml-2" />
                         انضم إلى عائلتنا
-                        
                       </>
                     )}
                   </motion.button>
@@ -444,9 +451,9 @@ const Footer = () => {
                 whileHover={{ scale: 1.02 }}
                 className="text-gray-400 mb-4 md:mb-0 flex items-center text-center"
               >
-                © 2024 المستر الفلاح. صُنع بـ
+                © {new Date().getFullYear()} المستر الفلاح. صُنع بـ
                 <Heart className="inline w-4 h-4 text-red-500 animate-pulse mx-1" />
-                وشغف لا نهائي بالتعليم الطبي.
+                وشغف لا نهائي بتعليم اللغة الإنجليزية.
               </motion.p>
               <div className="flex items-center space-x-6 space-x-reverse text-sm">
                 <motion.a

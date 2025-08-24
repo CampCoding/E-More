@@ -8,6 +8,7 @@ import Footer from '../../components/Footer/Footer';
 import About from '../About/About';
 import Apply from './Apply/Apply';
 import { MetaTags, pageMetaTags } from '../../utils/metaTags';
+import ContactNumbers from './ContactSection/ContactSection';
 
 const Home = () => {
   useEffect(() => {
@@ -19,7 +20,8 @@ const Home = () => {
       <div className="home">
         <Banner2 />
         <Feature />
-        <Courses />
+        <ContactNumbers />
+        {/* <Courses /> */}
         <About />
         <Footer />
       </div>

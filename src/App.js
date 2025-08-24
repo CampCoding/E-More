@@ -62,6 +62,8 @@ import { decryptData } from "./utils/decrypt";
 import DraftsPage from "./pages/Drafts/DraftsPage";
 import LineMatchingGame from "./Drafts.jsx/Match";
 import WordArrangementPuzzle from "./Drafts.jsx/WordArrangement";
+import TopHeader from "./components/Header/TopHeader";
+import MobileNavBar from './components/Header/MobileNavBar';
 
 function App() {
   const { pathname } = useLocation();
@@ -80,7 +82,9 @@ function App() {
       <>
         <>
           <SEO title="المستر الفلاح | Mr. Elfallah" lang="ar" />
+          <TopHeader />
           <Header />
+          {/* <MobileNavBar /> */}
 
           <FloatingActionButton />
           <Routes>
