@@ -252,7 +252,7 @@ const TopHeader = () => {
                   رقم التحويل{" "}
                 </div>
                 <div className="text-white" dir="ltr">
-                  +20 110 230 0955
+                  +201508465005
                 </div>
               </div>
             </div>
