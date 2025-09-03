@@ -912,7 +912,7 @@ const VideoPlayerWithQuiz = ({
               </a>
             </div>
           </div>
-          <div className="relative group" style={{
+          <div className="relative group !mt-2" style={{
               pointerEvents:!currentVideo?.exam?.exam_id && "none",
               opacity:!currentVideo?.exam?.exam_id && ".6",
               cursor:"not-allowed"
