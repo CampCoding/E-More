@@ -1,0 +1,388 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #f7f7f7;
+}
+
+.nav {
+  background: linear-gradient(to right, #6aab80ce, #6aab80);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 40px;
+}
+
+.progress-container p {
+  color: white;
+  margin: 0;
+  width: 210px !important;
+}
+
+.progress-container div {
+  background-color: #6aab80;
+  width: 200px;
+
+  border-radius: 10px;
+  margin: 8px 0;
+  position: relative;
+}
+
+.progress-container div::after {
+}
+
+.progress span {
+  height: 3px;
+  background: white;
+  border-radius: 10px;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.progress-container p:last-child {
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btns-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.btns-container button {
+  padding: 10px 30px;
+  border-radius: 10px;
+}
+
+.btns-container button:first-child {
+  color: white;
+  border: 1px solid white;
+  background-color: transparent;
+}
+
+.btns-container button:last-child {
+  display: flex;
+  justify-content: space-between;
+  background-color: white;
+  color: #e94168;
+  border: 1px solid white;
+  gap: 20px;
+}
+
+.btns-container button:last-child span {
+  margin: auto 0;
+}
+
+.btns-container svg {
+  width: 15px;
+  height: 15px;
+}
+
+.menu-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 40px;
+}
+
+.menu-container div {
+  display: flex;
+  justify-content: space-between;
+  color: white;
+  gap: 10px;
+}
+
+.menu-container div span {
+  margin: auto 0;
+}
+
+.menu-container div svg {
+  width: 20px;
+  height: 20px;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.home-text-box {
+  display: flex;
+  margin-top: 30px;
+  gap: 5px;
+  justify-content: space-between;
+  font-size: 20px;
+  font-weight: 900;
+  align-items: center;
+}
+
+.home-text-box p:first-child {
+  text-decoration: underline;
+  color: #e94168;
+}
+
+.home-text-box p:last-child {
+  text-decoration: underline;
+  color: #597b82;
+}
+
+.videos {
+}
+
+.nav {
+  padding: 20px;
+}
+
+.btns-container-next svg,
+.accordion svg {
+  color: #6aab80 !important;
+}
+
+.videos {
+  width: 100%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.showVideo,
+.showVideo iframe {
+  width: 100% !important;
+}
+
+.showVideo {
+  width: 80% !important;
+  border-radius: 16px !important;
+}
+
+.showVideo + div {
+  width: min(400px, 100%) !important;
+  max-height: 540px;
+  overflow-y: scroll;
+}
+
+.videoscolumnDiv {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.videoContentTwo {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #ebebeb;
+  -webkit-border-radius: 10px;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  -webkit-border-radius: 10px;
+  border-radius: 10px;
+  background: #6d6d6d;
+}
+
+.home-text-box p {
+  margin: 0 !important;
+}
+
+.accordion button {
+  width: 100% !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  border: none;
+}
+
+.accordion button svg {
+  width: 20px;
+}
+
+.accordion {
+}
+
+.accordion h4 {
+  font-size: 15px;
+  cursor: pointer;
+  padding: 0 20px;
+}
+
+h4.active {
+  color: #6aab80 !important;
+  font-weight: 800;
+  font-size: 20px;
+}
+
+.videoContentTwo,
+.videoContentTwo > div:first-child,
+.accordion {
+  margin: 0 !important;
+  gap: 0 !important;
+  max-height: 600px !important;
+  min-height: 600px !important;
+  background-color: transparent !important;
+}
+
+@media (max-width: 1072px) {
+  .videoContentTwo,
+  .videoContentTwo > div,
+  .accordion {
+    min-height: auto !important;
+    max-height: 1200vh !important;
+    width: 100% !important;
+    border-radius: none !important;
+  }
+  .videoContentTwo {
+    min-height: 100vh !important;
+    max-height: 1400vh !important;
+    flex-direction: column-reverse !important;
+  }
+  .accordion button,
+  h4.active,
+  .home-text-box p:last-child,
+  .flexRow button.btn-success,
+  .home-text-box svg {
+    font-size: 10px !important;
+  }
+  .showVideo + div {
+    overflow: visible !important;
+  }
+}
+.progress-container div:first-child {
+  display: none !important;
+}
+.progressBar p {
+  padding: 0 10px !important;
+}
+.progress {
+  display: none !important;
+}
+.accordian {
+  padding: 20px 0;
+}
+
+.accordion > * {
+  border: 1px solid;
+  border-bottom: 1px solid;
+  background: none !important;
+}
+
+.progress-container {
+  background: #6ead83;
+  padding: 20px;
+  position: sticky;
+  top: 0;
+  z-index: 11;
+}
+
+.progress-container {
+  display: flex;
+  background: #6ead83;
+  padding: 20px;
+  position: sticky;
+  top: 0;
+  z-index: 11;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.progress-container svg {
+  font-size: 22px;
+  width: 20px;
+  cursor: pointer;
+}
+
+.handlePrevVideo {
+  rotate: -180deg;
+}
+
+.home-text-box svg {
+  color: black !important;
+}
+
+.home-text-box > div {
+  color: black;
+  width: 40px;
+  min-height: 40px;
+}
+
+.flexRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  width: 100%;
+
+  margin-top: 30px;
+}
+
+.home-text-box {
+  margin: 0 !important;
+}
+
+.student_email {
+  opacity: 0.5;
+  position: absolute;
+  color: red;
+  font-weight: 900;
+
+  rotate: 30deg;
+  z-index: 187927817261;
+  pointer-events: none;
+}
+
+.student_id {
+  pointer-events: none;
+  opacity: 0.5;
+  position: absolute;
+  color: green;
+  font-weight: 900;
+
+  rotate: 30deg;
+}
+
+.showVideo {
+  position: relative;
+}
+
+iframe.videoIframe.isFullScreen {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 18792781726;
+}
+
+
+video{
+  pointer-events: none !important;
+}
+
+.videoPlayerControls {
+  opacity: 0 !important;
+  transition: opacity 0.3s ease-in-out !important;
+}
+
+.videoPalyerContainer:hover .videoPlayerControls {
+  opacity: 1 !important;
+}

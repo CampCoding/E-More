@@ -1,0 +1,21 @@
+.coursefeature {
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  padding: 10px;
+  margin: 20px 0px;
+}
+
+.coursefeature h4 {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.coursefeature>div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.coursefeature>div>* {
+  margin: 0px;
+}

@@ -1,0 +1,266 @@
+.course_description {
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  padding: 20px 10px;
+  border-radius: 10px;
+  margin: auto;
+  margin-bottom: 20px;
+  width: 500px;
+  max-width: 100%;
+}
+
+.course_description h4 {
+  text-align: center;
+  color: var(--main-color);
+  font-size: 25px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.course_description p {
+  color: #587a86;
+  font-size: 19px;
+  text-align: center;
+}
+
+.course_features {
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.course_features > h4 {
+  text-align: center;
+  margin: auto;
+  margin-bottom: 10px;
+  font-weight: 700;
+  font-size: 30px;
+  color: var(--main-color);
+}
+
+.content_div svg {
+  color: black !important;
+}
+
+.content_div h4 {
+  background-color: rgb(237, 239, 247);
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.content_div h4 span:first-of-type {
+  color: #587a86;
+}
+
+.content_div h4 span {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.videos {
+  overflow: hidden;
+  transition: 0.2s all ease-in-out;
+}
+
+.videos.hide {
+  height: 0px;
+}
+
+.videos.show {
+  height: fit-content;
+}
+
+.videos .video {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background-color: #f1f1f1;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  padding: 10px;
+}
+
+.videos .video .left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0px;
+}
+
+.videos .video .left span {
+  background-color: white;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.videos .video .left > * {
+  color: var(--main-color);
+}
+
+.videos .video .right {
+  padding: 0px;
+}
+
+.videos .video .left > *,
+.videos .video .right {
+  margin: 0px;
+}
+
+.videos .video .left img {
+  width: 20px;
+}
+
+.videos .video img {
+  width: 30px;
+  cursor: pointer;
+}
+
+.videos .video .right {
+  text-align: right;
+}
+
+@media (max-width: 565px) {
+  .videos .video {
+    padding: 10px 4px;
+  }
+
+  .videos .video .right {
+    flex: 1;
+  }
+
+  .videos .video h5 {
+    font-size: 18px;
+  }
+}
+
+.accordion dl,
+.accordion-list {
+  border: 1px solid #ddd;
+
+  &:after {
+    content: "";
+    display: block;
+    height: 1em;
+    width: 100%;
+    background-color: darken(#38cc70, 10%);
+  }
+}
+
+.accordion dd,
+.accordion__panel {
+  background-color: #eee;
+  font-size: 1em;
+  line-height: 1.5em;
+}
+
+.accordion p {
+  padding: 1em 2em 1em 2em;
+}
+
+.accordion {
+  position: relative;
+  background-color: #eee;
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2em 0 2em 0;
+}
+
+.accordionTitle,
+.accordion__Heading {
+  background-color: #38cc70;
+  text-align: center;
+  font-weight: 700;
+  padding: 2em;
+  display: block;
+  text-decoration: none;
+  color: #fff;
+  transition: background-color 0.5s ease-in-out;
+  border-bottom: 1px solid darken(#38cc70, 5%);
+
+  &:before {
+    content: "+";
+    font-size: 1.5em;
+    line-height: 0.5em;
+    float: left;
+    transition: transform 0.3s ease-in-out;
+  }
+
+  &:hover {
+    background-color: darken(#38cc70, 10%);
+  }
+}
+
+.accordionTitleActive,
+.accordionTitle.is-expanded {
+  background-color: darken(#38cc70, 10%);
+
+  &:before {
+    transform: rotate(-225deg);
+  }
+}
+
+.accordionItem {
+  height: auto;
+  overflow: hidden;
+
+  max-height: 50em;
+  transition: max-height 1s;
+
+  @media screen and (min-width: 48em) {
+    max-height: 15em;
+    transition: max-height 0.5s;
+  }
+}
+
+.accordionItem.is-collapsed {
+  max-height: 0;
+}
+
+.no-js .accordionItem.is-collapsed {
+  max-height: auto;
+}
+
+.animateIn {
+  animation: accordionIn 0.45s normal ease-in-out both 1;
+}
+
+.animateOut {
+  animation: accordionOut 0.45s alternate ease-in-out both 1;
+}
+
+@keyframes accordionIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) rotateX(-60deg);
+    transform-origin: 50% 0;
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes accordionOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(0.9) rotateX(-60deg);
+  }
+}

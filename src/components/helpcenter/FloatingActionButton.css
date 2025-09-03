@@ -1,0 +1,170 @@
+.floating-action-button-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  cursor: pointer;
+  z-index: 10000 !important;
+}
+
+.action-button {
+  background-color: #00e785;
+  color: black;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+}
+
+.tooltip {
+  position: absolute;
+  bottom: 60px;
+  left: -30%;
+  translate: -40% 5% !important;
+  background-color: white;
+  color: black;
+  padding: 8px;
+  min-width: 120px;
+  border-radius: 4px;
+  font-size: 14px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+  visibility: hidden;
+  z-index: 99;
+  font-size: 20px;
+}
+
+.tooltip.tooltip-visible {
+  visibility: visible;
+  opacity: 1 !important;
+  transform: translateX(-50%) translateY(-10px);
+}
+
+.tooltip.whtsContact {
+  left: -0%;
+  translate: -34% -2% !important;
+  background: white;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0 !important;
+  width: 0 !important;
+
+  height: 0 !important;
+  font-size: 14px;
+  background-color: white;
+  z-index: 16000160 !important;
+  min-width: 320px;
+  transition: 0.4s ease-in-out;
+
+  bottom: 80px !important;
+  right: 15px;
+  border-radius: 32px;
+  border: 2px solid #363636;
+  box-shadow: 4px 6px 0px #00e785;
+  padding: 32px 32px 16px;
+  min-height: 279px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  pointer-events: none;
+  opacity: 0;
+  scale: 0.5;
+  transform-origin: left bottom;
+}
+.tooltip.whtsContact.tooltip-visible {
+  width: 250px !important;
+  height: 150px !important;
+  scale: 1 !important;
+  pointer-events: initial !important;
+  padding: 30px !important;
+}
+
+.tooltip.whtsContact::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  right: 27px;
+  width: 0;
+  height: 0;
+  border-width: 0px 0px 34px 34px;
+  border-color: transparent transparent black transparent;
+  border-style: solid;
+  border-radius: 2px;
+  filter: drop-shadow(-2px 5px 0px #00e785);
+  transform: rotate(270deg);
+}
+
+.tooltip.whtsContact::before {
+  content: "";
+  position: absolute;
+  top: 100%;
+  right: 29px;
+  width: 0;
+  height: 0;
+  border-width: 0 0px 30px 30px;
+  border-color: transparent transparent white transparent;
+  border-style: solid;
+  transform: rotate(270deg);
+  z-index: 1;
+}
+
+.tooltip.whtsContact > div.wh_chat {
+  background-color: #1d1d1b !important;
+  box-shadow: 4px 4px 0px #00e785;
+  border-radius: 8px;
+  text-decoration: none;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  border-width: initial;
+  border-style: none;
+  border-color: initial;
+  border-image: initial;
+  width: 100%;
+  overflow: hidden;
+  opacity: 1 !important;
+}
+
+.wa-chat-box-content-chat-welcome {
+  font-size: 20px;
+  line-height: 150%;
+  color: #000000;
+}
+
+.intrnalButton {
+  display: flex;
+  align-items: flex-end;
+  gap: 30px;
+}
+
+.wa-chat-box-brand {
+  width: 52px;
+  height: 52px;
+  border: 1px solid #363636;
+  box-shadow: 0px 2px 240px rgba(0, 0, 0, 0.04);
+  border-radius: 100px;
+  background-color: #00e785;
+}
+
+.tootlTibvisible {
+  background: #ffffff;
+  border: 1px solid #363636;
+  box-shadow: 2px 3px 0px #00e785;
+  border-radius: 24px;
+  padding: 8px 16px;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 150%;
+  color: #202020;
+  cursor: pointer;
+  transform: translateX(-20%) translateY(-1px) !important;
+}

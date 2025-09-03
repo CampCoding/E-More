@@ -1,0 +1,14 @@
+.about_container {
+}
+
+.main-text {
+  color: var(--main-color);
+}
+
+.textContain h6 .fa-check {
+  transition: all 0.3s ease;
+}
+.textContain h6:hover .fa-check {
+  background-color: var(--main-color) !important;
+  color: white;
+}

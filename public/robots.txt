@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+
+# Disallow internal preview/testing routes if any
+Disallow: /drafts
+
+Sitemap: https://e-morelms.online/sitemap.xml
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://e-morelms.online/sitemap.xml
+
+# Disallow admin and private routes
+Disallow: /admin/
+Disallow: /private/
+Disallow: /api/
