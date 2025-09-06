@@ -480,12 +480,6 @@ console.log(showSuccess, showWrong )
         }
       `}</style>
 
-      <link
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css"
-        rel="stylesheet"
-        crossOrigin="anonymous"
-        referrerPolicy="no-referrer"
-      />
     </div>
   );
 };

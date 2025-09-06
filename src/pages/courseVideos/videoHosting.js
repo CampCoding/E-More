@@ -919,7 +919,7 @@ const VideoPlayerWithQuiz = ({
 
             }}>
               <a
-                href={`#`}
+                href={`/examQuestion/${currentVideo?.unit_exam?.exam_id}`}
                 target="_blank"
                 className={`relative w-full cursor-pointer rounded-2xl sm:rounded-3xl px-4 py-4 sm:px-5 sm:py-5 text-white shadow-lg transition-all duration-500 hover:scale-105 active:scale-95 overflow-hidden
           bg-gradient-to-br from-fuchsia-600 via-pink-500 to-rose-500 hover:from-fuchsia-500 hover:via-pink-400 hover:to-rose-400
@@ -990,12 +990,6 @@ const VideoPlayerWithQuiz = ({
         }
       `}</style>
 
-      <link
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css"
-        rel="stylesheet"
-        crossOrigin="anonymous"
-        referrerPolicy="no-referrer"
-      />
       {activeUrl && (
         <VideoModal activeUrl={activeUrl} setActiveUrl={setActiveUrl} />
       )}

@@ -1338,47 +1338,7 @@ export default function Quiz({
               </div>
 
               {/* Enhanced Actions Section */}
-              <div className="p-5 pt-0">
-                <div className="grid grid-cols-3 gap-3">
-                  <button
-                    onClick={handlePrevQuestion}
-                    disabled={questionIndex === 0}
-                    className={`group inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 font-bold shadow-md transition-all duration-200 ${
-                      questionIndex === 0
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed shadow-none"
-                        : "bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl"
-                    }`}
-                  >
-                    السابق
-                    <ArrowRight
-                      className={`w-4 h-4  transition-transform duration-200 ${
-                        questionIndex !== 0
-                          ? "group-hover:-translate-x-0.5"
-                          : ""
-                      }`}
-                    />
-                  </button>
-
-                  {questionIndex !== data.length - 1 ? (
-                    <button
-                      onClick={handleNextQuestion}
-                      className="group inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white px-4 py-3 font-bold shadow-md hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95"
-                    >
-                      التالي
-                      <ArrowLeft className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-                    </button>
-                  ) : (
-                    <button
-                      onClick={handleFinishQuiz}
-                      className="col-span-2 group inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 hover:from-amber-400 hover:via-orange-400 hover:to-yellow-400 text-white px-4 py-3 font-bold shadow-md hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95 relative overflow-hidden"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
-                      <Trophy className="w-5 h-5 transition-transform duration-200 group-hover:rotate-12 relative z-10" />
-                      <span className="relative z-10">إنهاء الاختبار</span>
-                    </button>
-                  )}
-                </div>
-              </div>
+            
 
               {/* Bottom accent line */}
               <div className="h-1 bg-gradient-to-r from-yellow-400 via-orange-400 to-amber-500"></div>
@@ -1426,7 +1386,7 @@ export default function Quiz({
             {/* Enhanced Navigation Buttons */}
             <div className="space-y-3">
               {/* Previous/Next Row */}
-              <div className="grid grid-cols-2 gap-3 p-3">
+              {/* <div className="grid grid-cols-2 gap-3 p-3">
                 <button
                   onClick={handlePrevQuestion}
                   disabled={questionIndex === 0}
@@ -1453,13 +1413,13 @@ export default function Quiz({
                     <ArrowLeft className="w-4 h-4 relative z-10 transition-transform group-hover:translate-x-1" />
                   </button>
                 ) : null}
-              </div>
+              </div> */}
 
               {/* Finish Button */}
               {questionIndex === data.length - 1 && (
                 <button
                   onClick={handleFinishQuiz}
-                  className="group relative w-full inline-flex items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-500 hover:from-amber-400 hover:via-yellow-400 hover:to-amber-400 text-white px-4 py-3 font-bold shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-2xl active:scale-95 overflow-hidden"
+                  className="group my-3 relative w-full inline-flex items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-500 hover:from-amber-400 hover:via-yellow-400 hover:to-amber-400 text-white px-4 py-3 font-bold shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-2xl active:scale-95 overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
                   <Trophy className="w-5 h-5 relative z-10 transition-transform group-hover:rotate-12 group-hover:scale-110 drop-shadow-sm" />
@@ -1566,6 +1526,47 @@ export default function Quiz({
                   })}
                 </div>
               )}
+                <div className="p-5 pt-0 mx-auto mt-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={handlePrevQuestion}
+                    disabled={questionIndex === 0}
+                    className={`group inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 font-bold shadow-md transition-all duration-200 ${
+                      questionIndex === 0
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed shadow-none"
+                        : "bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl"
+                    }`}
+                  >
+                    السابق
+                    <ArrowRight
+                      className={`w-4 h-4  transition-transform duration-200 ${
+                        questionIndex !== 0
+                          ? "group-hover:-translate-x-0.5"
+                          : ""
+                      }`}
+                    />
+                  </button>
+
+                  {questionIndex !== data.length - 1 ? (
+                    <button
+                      onClick={handleNextQuestion}
+                      className="group inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-white px-4 py-3 font-bold shadow-md hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95"
+                    >
+                      التالي
+                      <ArrowLeft className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleFinishQuiz}
+                      className="col-span-2 group inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 hover:from-amber-400 hover:via-orange-400 hover:to-yellow-400 text-white px-4 py-3 font-bold shadow-md hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95 relative overflow-hidden"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+                      <Trophy className="w-5 h-5 transition-transform duration-200 group-hover:rotate-12 relative z-10" />
+                      <span className="relative z-10">إنهاء الاختبار</span>
+                    </button>
+                  )}
+                </div>
+              </div>
 
               {/* Feedback (kept as-is) */}
               {submittedAnswers[questionIndex] && !selectedQuestion && (

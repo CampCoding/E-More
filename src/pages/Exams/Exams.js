@@ -158,7 +158,7 @@ const Exams = () => {
         {/* Exams Grid */}
         {data?.message && data?.message.length >= 1 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {data?.message?.map((exam, index) => (
+            {data?.message?.filter(item=>item?.type=="unit")?.map((exam, index) => (
               <div
                 key={exam.exam_id}
                 className="group bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-500 cursor-pointer border-2 border-white/50 hover:border-white/80 transform hover:scale-105 hover:-rotate-1 relative overflow-hidden"

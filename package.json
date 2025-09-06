@@ -8,7 +8,6 @@
     "@babel/preset-env": "^7.23.9",
     "@babel/preset-react": "^7.23.3",
     "@emotion/react": "^11.11.1",
-    "@fortawesome/fontawesome-free": "^6.5.1",
     "@lottiefiles/react-lottie-player": "^3.5.3",
     "@material-tailwind/react": "^2.1.9",
     "@pdf-viewer/react": "^1.7.1",
