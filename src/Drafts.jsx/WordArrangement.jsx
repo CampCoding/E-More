@@ -562,7 +562,7 @@ const handleTouchEnd = (e) => {
             </p>
 
             {arabicHint && (
-              <div dir="rtl" className="mt-2">
+              <div dir="rtl" className="mt-2 mb-2">
                 <div className="inline-block max-w-[90%] px-4 py-2 rounded-2xl bg-white/10 border border-white/20 text-yellow-200 text-sm md:text-lg font-semibold shadow-md">
                   {arabicHint}
                 </div>
