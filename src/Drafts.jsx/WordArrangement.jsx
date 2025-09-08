@@ -19,6 +19,7 @@ const WordArrangementPuzzle = ({
   selectedQuestion,
   onChange,
   defaultArranged = [], // ✅ new prop
+  translationText = "", // ✅ optional Arabic text to display
 }) => {
   useEffect(() => {
     console.log("selectedQuestion", selectedQuestion);
@@ -435,6 +436,23 @@ const handleTouchEnd = (e) => {
     setArrangedWords(newArrangedWords);
   };
 
+  // CLICK-TO-ARRANGE HANDLERS
+  const handleClickAvailable = (word, index) => {
+    if (showAnswers) return;
+    setAvailableWords((prev) => prev.filter((_, i) => i !== index));
+    setArrangedWords((prev) => [...prev, word]);
+  };
+
+  const handleClickArranged = (index) => {
+    if (showAnswers) return;
+    setArrangedWords((prev) => {
+      const next = [...prev];
+      const [moved] = next.splice(index, 1);
+      setAvailableWords((avail) => [...avail, moved]);
+      return next;
+    });
+  };
+
   // Get the display result
   const getDisplayResult = () => {
     if (currentPuzzle.gameType === "character") {
@@ -472,6 +490,10 @@ const handleTouchEnd = (e) => {
   };
 
   const typeInfo = getPuzzleTypeInfo();
+
+  // Arabic text source (props override, then selectedQuestion fields, else from sample)
+  const arabicHint =
+    translationText ;
 
   return (
     <div className="min-h-screen  relative overflow-hidden">
@@ -538,6 +560,14 @@ const handleTouchEnd = (e) => {
             <p className="text-base md:text-xl text-blue-100 mb-4">
               {typeInfo.subtitle}
             </p>
+
+            {arabicHint && (
+              <div dir="rtl" className="mt-2">
+                <div className="inline-block max-w-[90%] px-4 py-2 rounded-2xl bg-white/10 border border-white/20 text-yellow-200 text-sm md:text-lg font-semibold shadow-md">
+                  {arabicHint}
+                </div>
+              </div>
+            )}
 
             {/* Level and Score Display */}
 
@@ -625,23 +655,13 @@ const handleTouchEnd = (e) => {
                       <div
                         key={`arranged-${word}-${index}`}
                         data-arranged-index={index}
-                        draggable={!showAnswers && !isDragging}
-                        onDragStart={(e) =>
-                          handleDragStart(e, word, index, "arranged")
-                        }
-                        onDragEnd={handleDragEnd}
-                        onDragOver={(e) => handleDragOver(e, "arranged", index)}
-                        onDrop={(e) => handleDrop(e, "arranged", index)}
-                        onTouchStart={(e) =>
-                          handleTouchStart(e, word, index, "arranged")
-                        }
-                        onTouchMove={handleTouchMove}
-                        onTouchEnd={handleTouchEnd}
-                        className={`group relative ${
+                        draggable={false}
+                        onClick={() => handleClickArranged(index)}
+                        className={`group relative cursor-pointer ${
                           currentPuzzle.gameType === "character"
                             ? "px-3 py-2 md:px-4 md:py-3 text-lg md:text-2xl"
                             : "px-4 py-2 md:px-6 md:py-3 text-sm md:text-lg"
-                        } rounded-xl border-2 cursor-grab active:cursor-grabbing transition-all duration-300 transform hover:scale-105 select-none touch-manipulation ${
+                        } rounded-xl border-2 transition-all duration-300 transform hover:scale-105 select-none touch-manipulation ${
                           isDraggingThis ? "opacity-30 scale-90" : ""
                         } ${
                           isDropTarget
@@ -714,21 +734,13 @@ const handleTouchEnd = (e) => {
                     return (
                       <div
                         key={`available-${word}-${index}`}
-                        draggable={!showAnswers && !isDragging}
-                        onDragStart={(e) =>
-                          handleDragStart(e, word, index, "available")
-                        }
-                        onDragEnd={handleDragEnd}
-                        onTouchStart={(e) =>
-                          handleTouchStart(e, word, index, "available")
-                        }
-                        onTouchMove={handleTouchMove}
-                        onTouchEnd={handleTouchEnd}
-                        className={`group relative ${
+                        draggable={false}
+                        onClick={() => handleClickAvailable(word, index)}
+                        className={`group relative cursor-pointer ${
                           currentPuzzle.gameType === "character"
                             ? "px-3 py-2 md:px-4 md:py-3 text-lg md:text-2xl"
                             : "px-4 py-2 md:px-6 md:py-3 text-sm md:text-lg"
-                        } rounded-xl border-2 cursor-grab active:cursor-grabbing transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 select-none touch-manipulation ${
+                        } rounded-xl border-2 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 select-none touch-manipulation ${
                           isDraggingThis ? "opacity-30 scale-90" : ""
                         } border-white/30 bg-white/10 hover:border-purple-400 hover:bg-gradient-to-r hover:from-purple-400/20 hover:to-pink-400/20 hover:shadow-xl hover:shadow-purple-400/30 backdrop-blur-sm`}
                       >

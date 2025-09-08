@@ -1458,6 +1458,7 @@ export default function Quiz({
                     gameType={selectedQuestion?.gameType}
                     correctSentence={selectedQuestion?.correctSentence}
                     scrambledWords={selectedQuestion?.str_shuffle}
+                    translationText={selectedQuestion?.hint}
                     defaultArranged={answers[questionIndex] || []}
                   />
                 </div>
