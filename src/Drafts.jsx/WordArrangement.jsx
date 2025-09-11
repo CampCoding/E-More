@@ -771,12 +771,11 @@ const handleTouchEnd = (e) => {
               </div>
               <div className="flex flex-wrap justify-center gap-4 text-xs md:text-sm">
                 <span>
-                  🖱️ <strong>طريقة اللعب:</strong> اسحب وأفلت
+                  🖱️ <strong>طريقة اللعب:</strong> اضغط ع الكلمة
                 </span>
-                <span>
-                  🔄 <strong>إعادة ترتيب:</strong> اسحب العناصر المرتبة لتغيير
-                  ترتيبها
-                </span>
+                {/* <span>
+                  🔄 <strong>إعادة ترتيب:</strong> اضغط 
+                </span> */}
                 <span>
                   ✨ <strong>الهدف:</strong>{" "}
                   {currentPuzzle.gameType === "character"
