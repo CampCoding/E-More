@@ -18,7 +18,7 @@ export default function SEO({
 	type = 'website',
 }) {
 	const win = getWindowSafe();
-	const origin = win?.location?.origin || 'http://elmisterelfallah.com';
+	const origin = win?.location?.origin || 'https://elmisterelfallah.com';
 	const pathname = path || win?.location?.pathname || '/';
 	const canonicalUrl = `${origin}${pathname}`;
 

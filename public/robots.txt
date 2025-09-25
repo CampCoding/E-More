@@ -4,13 +4,13 @@ Allow: /
 # Disallow internal preview/testing routes if any
 Disallow: /drafts
 
-Sitemap: http://elmisterelfallah.com/sitemap.xml
+Sitemap: https://elmisterelfallah.com/sitemap.xml
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: http://elmisterelfallah.com/sitemap.xml
+Sitemap: https://elmisterelfallah.com/sitemap.xml
 
 # Disallow admin and private routes
 Disallow: /admin/

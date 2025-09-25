@@ -15,6 +15,9 @@ import Hls from "hls.js";
 import "./style.css";
 import "antd/dist/reset.css";
 import VideoModal from "./videoModal";
+import axios from "axios";
+import { decryptData } from "../../utils/decrypt";
+import { base_url } from "../../constants";
 
 const VideoPlayerWithQuiz = ({
   currentQuestion,
@@ -51,6 +54,26 @@ const VideoPlayerWithQuiz = ({
   const [videoError, setVideoError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
   const lastCheckedTime = useRef(0);
+  useEffect(() => {
+    const v = iframeRef.current;
+    if (!v) return;
+
+    const flush = () => {
+      // close segment if still counting
+      if (lastTickRef.current != null) {
+        watchSecondsRef.current += (Date.now() - lastTickRef.current) / 1000;
+        lastTickRef.current = null;
+      }
+      sendRequest({
+        type: "heartbeat",
+        current_position: Math.floor(v.currentTime || 0),
+        cumulative_watch_seconds: Math.floor(watchSecondsRef.current),
+      });
+    };
+
+    window.addEventListener("beforeunload", flush);
+    return () => window.removeEventListener("beforeunload", flush);
+  }, []);
 
   const iframeRef = useRef(null);
   const containerRef = useRef(null);
@@ -67,6 +90,73 @@ const VideoPlayerWithQuiz = ({
     showWrong,
   });
   // Use axios to POST to https://camp-coding.online/iframe.php with payload { video_url: "<your_video_url_here>" }
+  // minute-ended tracking (timeline minutes 1,2,3,...)
+
+  // Per-minute watch time (content seconds) and timeline-minute events sent
+  const perMinuteWatchRef = useRef(new Map()); // minuteIndex(0-based) -> seconds watched in that minute
+  const lastVideoTimeRef = useRef(null); // last video currentTime we saw
+  const sentMinutesRef = useRef(new Set()); // which minute indices (1-based) were already sent
+  const watchSecondsRef = useRef(null);
+  const lastTickRef = useRef(null);
+
+  // wall-clock ms when playback last advanced
+  useEffect(() => {
+    perMinuteWatchRef.current = new Map();
+    lastVideoTimeRef.current = null;
+    sentMinutesRef.current = new Set();
+  }, [videoUrl, isPlaying]);
+
+  useEffect(() => {
+    sentMinutesRef.current = new Set();
+    watchSecondsRef.current = 0;
+    lastTickRef.current = null;
+  }, [videoUrl, isPlaying]);
+  useEffect(() => {
+    const v = iframeRef.current;
+    if (!v) return;
+
+    const onPlay = () => {
+      // start a new timing segment
+      lastTickRef.current = Date.now();
+    };
+
+    const onPause = () => {
+      // close current timing segment
+      if (lastTickRef.current != null) {
+        watchSecondsRef.current += (Date.now() - lastTickRef.current) / 1000;
+        lastTickRef.current = null;
+      }
+    };
+
+    v.addEventListener("play", onPlay);
+    v.addEventListener("pause", onPause);
+
+    return () => {
+      v.removeEventListener("play", onPlay);
+      v.removeEventListener("pause", onPause);
+    };
+  }, [isPlaying]);
+
+  // Update your sendRequest to send richer data (or keep console.log if testing)
+  const sendRequest = async (payload) => {
+    // example:
+    // fetch('/api/minute-ended', {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify(payload),
+    // });
+    const localData = localStorage.getItem("elmataryapp");
+    const decryptedUserData = decryptData(localData);
+
+    const z = axios.post(
+      "https://camp-coding.tech/emore/admin/reports/insert_into_videos.php",
+      JSON.stringify({
+        student_id: decryptedUserData?.student_id,
+        ...payload,
+        video_id: currentVideo?.video_id,
+      })
+    );
+  };
 
   // Helper function to get iframe src from backend
   const fetchIframeSrc = async () => {
@@ -512,18 +602,75 @@ const VideoPlayerWithQuiz = ({
             controls={false}
             className="md:absolute top-0 left-0 w-full h-full"
             onTimeUpdate={(e) => {
-              const current = e.target.currentTime;
-              const duration = e.target.duration || 1; // fallback
-              const percent = (current / duration) * 100;
+              const v = e.target;
+              const nowT = v.currentTime || 0;
+              const duration = v.duration || 1;
+              const percent = (nowT / duration) * 100;
 
-              setProgress(percent); // percent (0–100) for background and UI
-              setCurrentTime(formatTime(current));
-              setVideoDuration(duration); // ensure you update total duration here
-              handleProgressChange(current);
-              setIsPlaying(!e.target.paused);
+              // ... your existing UI code ...
+              setProgress(percent);
+              setCurrentTime(formatTime(nowT));
+              setVideoDuration(duration);
+              handleProgressChange(nowT);
+              setIsPlaying(!v.paused);
+
+              // ----- ACCUMULATE WATCHED SECONDS INTO MINUTE BUCKETS -----
+              // Use playback-time deltas (content seconds). Ignore big jumps (seeks).
+              const lastT = lastVideoTimeRef.current;
+              if (!v.paused && !v.seeking && lastT != null) {
+                let dt = nowT - lastT; // content seconds advanced since last tick
+                if (dt > 0 && dt < 5) {
+                  // ignore seeks/jumps; adjust threshold as you like
+                  let tCursor = lastT; // walk through minutes crossed in this dt window
+                  while (dt > 0) {
+                    const minuteIdx = Math.floor(tCursor / 60); // 0,1,2,...
+                    const nextBoundary = (minuteIdx + 1) * 60; // 60,120,...
+                    const chunk = Math.min(dt, nextBoundary - tCursor);
+
+                    perMinuteWatchRef.current.set(
+                      minuteIdx,
+                      (perMinuteWatchRef.current.get(minuteIdx) || 0) + chunk
+                    );
+
+                    dt -= chunk;
+                    tCursor += chunk;
+                  }
+                }
+              }
+              lastVideoTimeRef.current = nowT;
+
+              // ----- SEND MINUTE-ENDED EVENTS (EVEN IF SKIPPED) -----
+              const currentMinute1b = Math.floor(nowT / 60); // 0,1,2,...  (0 means first minute 0:00–0:59)
+              for (let m1b = 1; m1b <= currentMinute1b; m1b++) {
+                if (!sentMinutesRef.current.has(m1b)) {
+                  sentMinutesRef.current.add(m1b);
+
+                  const minuteZeroBased = m1b - 1;
+                  const watchedThisMinute = Math.floor(
+                    perMinuteWatchRef.current.get(minuteZeroBased) || 0
+                  );
+
+                  // Optional: cumulative across all minutes so far (content seconds)
+                  const cumulativeWatched = Math.floor(
+                    Array.from(perMinuteWatchRef.current.values()).reduce(
+                      (a, b) => a + b,
+                      0
+                    )
+                  );
+
+                  sendRequest({
+                    type: "timeline_minute_ended",
+                    minute: m1b, // 1-based: 1 => 0:00–0:59, 2 => 1:00–1:59, ...
+                    at_timeline_second: m1b * 60, // 60,120,...
+                    watched_seconds_in_minute: watchedThisMinute, // ✅ WHAT YOU ASKED FOR
+                    cumulative_watched_seconds: cumulativeWatched, // (optional)
+                    current_position: Math.floor(nowT),
+                  });
+                }
+              }
             }}
-            onStateChange={(e) => {}}
-          ></video>
+          />
+
           {/* <iframe src="https://player.vdocipher.com/v2/?otp=20160313versASE323l2HcuuTENhewIswTbnMsoxUo8gr0Trpmg1eJZ0vZRM0L7v&playbackInfo=eyJ2aWRlb0lkIjoiYjFlMDlkNjMxODE0MDc1NTU4Y2Y1ZDAxYjk1ZmFhZDYifQ==" style="border:0;height:360px;width:640px;max-width:100%" allowFullScreen="true" allow="encrypted-media"></iframe> */}
           {/* {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-10">
@@ -755,12 +902,11 @@ const VideoPlayerWithQuiz = ({
             {/* تسميع الكلمات */}
             <div className="relative group">
               <button
-              style={{
-                pointerEvents:!currentVideo?.words && "none",
-                opacity:!currentVideo?.words && ".6",
-                cursor:!currentVideo?.words &&"not-allowed"
-  
-              }}
+                style={{
+                  pointerEvents: !currentVideo?.words && "none",
+                  opacity: !currentVideo?.words && ".6",
+                  cursor: !currentVideo?.words && "not-allowed",
+                }}
                 onClick={() => {
                   setActiveUrl(currentVideo?.words);
                   console.log("currentVideo", currentVideo);
@@ -797,10 +943,9 @@ const VideoPlayerWithQuiz = ({
             <div className="relative group">
               <button
                 style={{
-                  pointerEvents:!currentVideo?.tune && "none",
-                  opacity:!currentVideo?.tune && ".6",
-                  cursor:!currentVideo?.tune &&"not-allowed"
-    
+                  pointerEvents: !currentVideo?.tune && "none",
+                  opacity: !currentVideo?.tune && ".6",
+                  cursor: !currentVideo?.tune && "not-allowed",
                 }}
                 onClick={() => setActiveUrl(currentVideo?.tune)}
                 className={`relative w-full cursor-pointer rounded-2xl sm:rounded-3xl px-4 py-4 sm:px-5 sm:py-5 text-white shadow-lg transition-all duration-500 hover:scale-105 active:scale-95 overflow-hidden
@@ -821,7 +966,7 @@ const VideoPlayerWithQuiz = ({
                 </div>
 
                 <span className="relative font-bold text-sm sm:text-base whitespace-nowrap drop-shadow-sm">
-                أغنية الدرس
+                  أغنية الدرس
                 </span>
 
                 {/* Active Indicator */}
@@ -835,10 +980,9 @@ const VideoPlayerWithQuiz = ({
             <div className="relative group">
               <button
                 style={{
-                  pointerEvents:!currentVideo?.solve && "none",
-                  opacity:!currentVideo?.solve && ".6",
-                  cursor:!currentVideo?.solve &&"not-allowed"
-    
+                  pointerEvents: !currentVideo?.solve && "none",
+                  opacity: !currentVideo?.solve && ".6",
+                  cursor: !currentVideo?.solve && "not-allowed",
                 }}
                 onClick={() => setActiveUrl(currentVideo?.solve)}
                 className={`relative w-full cursor-pointer rounded-2xl sm:rounded-3xl px-4 py-4 sm:px-5 sm:py-5 text-white shadow-lg transition-all duration-500 hover:scale-105 active:scale-95 overflow-hidden
@@ -870,12 +1014,14 @@ const VideoPlayerWithQuiz = ({
             </div>
 
             {/* اختبر نفسك */}
-            <div className="relative group" style={{
-              pointerEvents:!currentVideo?.exam?.exam_id && "none",
-              opacity:!currentVideo?.exam?.exam_id && ".6",
-              cursor:"not-allowed"
-
-            }}>
+            <div
+              className="relative group"
+              style={{
+                pointerEvents: !currentVideo?.exam?.exam_id && "none",
+                opacity: !currentVideo?.exam?.exam_id && ".6",
+                cursor: "not-allowed",
+              }}
+            >
               <a
                 href={`/examQuestion/${currentVideo?.exam?.exam_id}`}
                 target="_blank"
@@ -897,7 +1043,7 @@ const VideoPlayerWithQuiz = ({
                 </div>
 
                 <span className="relative font-bold text-sm sm:text-base whitespace-nowrap drop-shadow-sm">
-                تسميع الكلمات
+                  تسميع الكلمات
                 </span>
 
                 {/* External Link Indicator */}
@@ -912,47 +1058,49 @@ const VideoPlayerWithQuiz = ({
               </a>
             </div>
           </div>
-          <div className="relative group !mt-2" style={{
-              pointerEvents:!currentVideo?.exam?.exam_id && "none",
-              opacity:!currentVideo?.exam?.exam_id && ".6",
-              cursor:"not-allowed"
-
-            }}>
-              <a
-                href={`/examQuestion/${currentVideo?.unit_exam?.exam_id}`}
-                target="_blank"
-                className={`relative w-full cursor-pointer rounded-2xl sm:rounded-3xl px-4 py-4 sm:px-5 sm:py-5 text-white shadow-lg transition-all duration-500 hover:scale-105 active:scale-95 overflow-hidden
+          <div
+            className="relative group !mt-2"
+            style={{
+              pointerEvents: !currentVideo?.exam?.exam_id && "none",
+              opacity: !currentVideo?.exam?.exam_id && ".6",
+              cursor: "not-allowed",
+            }}
+          >
+            <a
+              href={`/examQuestion/${currentVideo?.unit_exam?.exam_id}`}
+              target="_blank"
+              className={`relative w-full cursor-pointer rounded-2xl sm:rounded-3xl px-4 py-4 sm:px-5 sm:py-5 text-white shadow-lg transition-all duration-500 hover:scale-105 active:scale-95 overflow-hidden
           bg-gradient-to-br from-fuchsia-600 via-pink-500 to-rose-500 hover:from-fuchsia-500 hover:via-pink-400 hover:to-rose-400
           flex flex-col items-center justify-center gap-3 min-h-[100px] sm:min-h-[120px] ${
             videoUrl === activityVideos.test
               ? "ring-4 ring-white/60 ring-offset-2 ring-offset-black shadow-2xl scale-105"
               : "hover:shadow-xl"
           }`}
-              >
-                {/* Shimmer Effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+            >
+              {/* Shimmer Effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
 
-                {/* Icon with Enhanced Animation */}
-                <div className="relative">
-                  <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 opacity-90 group-hover:opacity-100 transition-all duration-300 group-hover:scale-110 group-hover:-rotate-6 drop-shadow-sm" />
-                  <div className="absolute -inset-2 bg-white/10 rounded-full opacity-0 group-hover:opacity-100 animate-ping transition-opacity duration-300"></div>
-                </div>
+              {/* Icon with Enhanced Animation */}
+              <div className="relative">
+                <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 opacity-90 group-hover:opacity-100 transition-all duration-300 group-hover:scale-110 group-hover:-rotate-6 drop-shadow-sm" />
+                <div className="absolute -inset-2 bg-white/10 rounded-full opacity-0 group-hover:opacity-100 animate-ping transition-opacity duration-300"></div>
+              </div>
 
-                <span className="relative font-bold text-sm sm:text-base whitespace-nowrap drop-shadow-sm">
-              اختبار الدرس
-                </span>
+              <span className="relative font-bold text-sm sm:text-base whitespace-nowrap drop-shadow-sm">
+                اختبار الدرس
+              </span>
 
-                {/* External Link Indicator */}
-                <div className="absolute top-2 left-2 w-4 h-4 border-2 border-white/60 rounded-sm flex items-center justify-center">
-                  <div className="w-1 h-1 bg-white rounded-full"></div>
-                </div>
+              {/* External Link Indicator */}
+              <div className="absolute top-2 left-2 w-4 h-4 border-2 border-white/60 rounded-sm flex items-center justify-center">
+                <div className="w-1 h-1 bg-white rounded-full"></div>
+              </div>
 
-                {/* Active Indicator */}
-                {videoUrl === activityVideos.test && (
-                  <div className="absolute top-2 right-2 w-3 h-3 bg-white rounded-full animate-pulse shadow-lg"></div>
-                )}
-              </a>
-            </div>
+              {/* Active Indicator */}
+              {videoUrl === activityVideos.test && (
+                <div className="absolute top-2 right-2 w-3 h-3 bg-white rounded-full animate-pulse shadow-lg"></div>
+              )}
+            </a>
+          </div>
           {/* Bottom Gradient Line */}
           <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
         </div>

@@ -17,6 +17,7 @@ import LineMatchingGame from "../../Drafts.jsx/Match";
 import WordArrangementPuzzle from "../../Drafts.jsx/WordArrangement";
 import usePostData from "../../Hooks/ApiHooks/POST/usePostData";
 import useGetUserData from "../../Hooks/ApiHooks/useGetUserData";
+import { decryptData } from "../../utils/decrypt";
 
 export default function Quiz({
   data = mockData,
@@ -54,7 +55,10 @@ export default function Quiz({
 
   // Handlers
   function handleNextQuestion() {
+                         handleSubmitAnswers()
+
     if (questionIndex < data.length - 1) setQuestionIndex((v) => v + 1);
+    
   }
   function handlePrevQuestion() {
     if (questionIndex > 0) setQuestionIndex((v) => v - 1);
@@ -186,9 +190,12 @@ export default function Quiz({
       setCorrectAnswer(`عدد التوصيلات الصحيحة المتوقعة: ${totalPairs}`);
       setAllWrongAnswers([]);
     }
-
+  const localData = localStorage.getItem("elmataryapp");
+  const decryptedUserData = decryptData(localData);
+  
     // send to backend
     const payload = {
+      student_id: decryptedUserData?.student_id,
       question_id: q?.question_id,
       student_answer: toStudentAnswerSingle(q, ans),
       time_taken: questionTimes[questionIndex] || 0,

@@ -14,7 +14,7 @@ export default function ExamQuestions() {
 
   const exams = data?.message || [];
   const examData = data?.data || [];
-
+{console.log(examData)}
   useEffect(() => {
     console.log("userData", userData);
   }, [userData]);
@@ -74,7 +74,7 @@ export default function ExamQuestions() {
           </div>
         </div>
       ) : exams?.length ? (
-        <Quiz data={exams} examData={examData} timer={(examData?.exam_time/60)} examId={id} />
+        <Quiz data={exams} examData={examData} timer={(parseInt(examData?.exam_time) / 60)} examId={id} />
       ) : (
         <div className="flex flex-col items-center justify-center py-20 !min-w-[100%]">
           <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-gray-200/50 p-12 text-center max-w-md mx-auto">

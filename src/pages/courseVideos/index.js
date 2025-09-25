@@ -1,32 +1,18 @@
-import { useState, useEffect } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import {
-  ArrowLeft,
-  SkipForward,
-  SkipBack,
-  Book,
-  Star,
-  Award,
-  Download,
-  Menu,
-  X,
-  Users,
-  Clock,
-  Trophy,
-  Heart,
-  Play,
-} from "lucide-react";
-import VideoPlayerWithQuiz from "./videoHosting";
-import QuizModal from "../../components/QuizModal/QuizModal";
-import { toast } from "react-toastify";
-import correctSound from "../../assets/mixkit-correct-answer-tone-2870.wav";
-import PdfViewer from "../../components/AprysePdfViewer";
-import { useSearchParams } from "react-router-dom";
 import axios from "axios";
+import { motion } from "framer-motion";
+import {
+  Star,
+  Trophy
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import correctSound from "../../assets/mixkit-correct-answer-tone-2870.wav";
+import QuizModal from "../../components/QuizModal/QuizModal";
+import SEO from "../../components/SEO/SEO";
 import { base_url } from "../../constants";
 import { decryptData } from "../../utils/decrypt";
 import ReactPdf from "./react-pdf";
-import SEO from "../../components/SEO/SEO";
+import VideoPlayerWithQuiz from "./videoHosting";
 const EMOJIS = ["🌟", "🎈", "🎉", "🎊", "🦄", "📋", "🍭", "🎪"];
 const MESSAGES = [
   "Amazing!",
@@ -121,6 +107,7 @@ export default function KidsCourseContent() {
   const [courseData, setCourseData] = useState([]);
   const localData = localStorage.getItem("elmataryapp");
   const decryptedUserData = decryptData(localData);
+  
   const [pageLoading, setPageLoading] = useState(false);
   const getCourseData = async () => {
     setPageLoading(true);

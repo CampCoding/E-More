@@ -37,7 +37,32 @@ const VideoPlayerWithQuiz = ({
   const [quality, setQuality] = useState('auto');
   const [isLoading, setIsLoading] = useState(true);
   const lastCheckedTime = useRef(0);
+// ...existing code...
+const intervalRef = useRef(null);
 
+const sendRequest = (currentTime) => {
+  // Replace with your request logic
+  console.log('Sending request at', currentTime);
+  // Example: fetch('/api/your-endpoint', { method: 'POST', body: JSON.stringify({ time: currentTime }) });
+};
+
+useEffect(() => {
+  if (isPlaying) {
+    intervalRef.current = setInterval(async () => {
+      if (playerRef.current) {
+        const status = await playerRef.current.getPlaybackStatus();
+        const position = Math.floor(status.position);
+        if (position > 0 && position % 30 === 0) {
+          sendRequest(position);
+        }
+      }
+    }, 1000); // Check every second
+  } else {
+    clearInterval(intervalRef.current);
+  }
+  return () => clearInterval(intervalRef.current);
+}, [isPlaying]);
+// ...existing code...
   const iframeRef = useRef(null);
   const containerRef = useRef(null);
   const playerRef = useRef(null);
