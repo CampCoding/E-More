@@ -252,7 +252,7 @@ const KidsExamsLanding = () => {
                           <span className="font-bold text-gray-700">الوقت</span>
                         </div>
                         <span className="text-blue-600 font-bold text-lg">
-                          {exam.exam_time} دقيقة
+                          {exam.exam_time/60} دقيقة
                         </span>
                       </div>
 

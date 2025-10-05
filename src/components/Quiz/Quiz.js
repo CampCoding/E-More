@@ -21,7 +21,7 @@ import useGetUserData from "../../Hooks/ApiHooks/useGetUserData";
 export default function Quiz({
   data = mockData,
   examData,
-  timer = 5,
+  timer = 30,
   examId,
   type = "exams",
 }) {

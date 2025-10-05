@@ -19,6 +19,7 @@ function VideoModal({ activeUrl, setActiveUrl }) {
   const videoRef = useRef(null);
   const containerRef = useRef(null);
   const hlsRef = useRef(null);
+  const playerIdRef = useRef(`modal-${Math.random().toString(36).slice(2)}`);
   const hideControlsTimer = useRef(null);
   const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
   const [mobileVolumeOpen, setMobileVolumeOpen] = useState(false);
@@ -140,6 +141,14 @@ function VideoModal({ activeUrl, setActiveUrl }) {
     const handlePlaying = () => {
       setIsPlaying(true);
       setIsBuffering(false);
+      // Broadcast that this player started so others can pause
+      try {
+        window.dispatchEvent(
+          new CustomEvent("app-video-play", {
+            detail: { id: playerIdRef.current },
+          })
+        );
+      } catch {}
     };
 
     const handlePause = () => {
@@ -261,6 +270,22 @@ function VideoModal({ activeUrl, setActiveUrl }) {
       if (retryTimeout) clearTimeout(retryTimeout);
     };
   }, [activeUrl, retryCount]);
+
+  // Listen for other players starting and pause this one if needed
+  useEffect(() => {
+    const handler = (e) => {
+      const otherId = e?.detail?.id;
+      if (!otherId || otherId === playerIdRef.current) return;
+      const v = videoRef.current;
+      if (v && !v.paused) {
+        try {
+          v.pause();
+        } catch {}
+      }
+    };
+    window.addEventListener("app-video-play", handler);
+    return () => window.removeEventListener("app-video-play", handler);
+  }, []);
 
   // Fullscreen change tracking
   useEffect(() => {

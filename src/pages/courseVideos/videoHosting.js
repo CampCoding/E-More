@@ -53,6 +53,7 @@ const VideoPlayerWithQuiz = ({
   const [isLoading, setIsLoading] = useState(false);
   const [videoError, setVideoError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [activeUrl, setActiveUrl] = useState(null);
   const lastCheckedTime = useRef(0);
   useEffect(() => {
     const v = iframeRef.current;
@@ -79,6 +80,7 @@ const VideoPlayerWithQuiz = ({
   const containerRef = useRef(null);
   const playerRef = useRef(null);
   const durationRef = useRef(0);
+  const playerIdRef = useRef(`host-${Math.random().toString(36).slice(2)}`);
   const propsRef = useRef({
     questions,
     answeredQuestions,
@@ -118,6 +120,14 @@ const VideoPlayerWithQuiz = ({
     const onPlay = () => {
       // start a new timing segment
       lastTickRef.current = Date.now();
+      // Broadcast that this player started so others can pause
+      try {
+        window.dispatchEvent(
+          new CustomEvent("app-video-play", {
+            detail: { id: playerIdRef.current },
+          })
+        );
+      } catch {}
     };
 
     const onPause = () => {
@@ -136,6 +146,32 @@ const VideoPlayerWithQuiz = ({
       v.removeEventListener("pause", onPause);
     };
   }, [isPlaying]);
+
+  // Listen for other players starting and pause this one if needed
+  useEffect(() => {
+    const handler = (e) => {
+      const otherId = e?.detail?.id;
+      if (!otherId || otherId === playerIdRef.current) return;
+      const v = iframeRef.current;
+      if (v && !v.paused) {
+        try {
+          v.pause();
+        } catch {}
+      }
+    };
+    window.addEventListener("app-video-play", handler);
+    return () => window.removeEventListener("app-video-play", handler);
+  }, []);
+
+  // When an activity modal opens, pause the main player
+  useEffect(() => {
+    const v = iframeRef.current;
+    if (activeUrl && v && !v.paused) {
+      try {
+        v.pause();
+      } catch {}
+    }
+  }, [activeUrl]);
 
   // Update your sendRequest to send richer data (or keep console.log if testing)
   const sendRequest = async (payload) => {
@@ -248,7 +284,6 @@ const VideoPlayerWithQuiz = ({
     }
   };
   const [videoDuration, setVideoDuration] = useState(0);
-  const [activeUrl, setActiveUrl] = useState(null);
   // useEffect(() => {
   //   let script = document.querySelector('script[src="https://unpkg.com/@peertube/embed-api/build/player.min.js"]');
 
@@ -587,7 +622,7 @@ const VideoPlayerWithQuiz = ({
         ref={containerRef}
         className="relative overflow-hidden bg-black rounded-t-2xl group !max-h-[130%]"
       >
-        <div className="relative w-full md:pt-[56.25%]">
+        <div className="relative w-full aspect-video">
           {/* <iframe
             key={videoUrl}
             ref={iframeRef}
@@ -600,7 +635,9 @@ const VideoPlayerWithQuiz = ({
             ref={iframeRef}
             muted={true}
             controls={false}
-            className="md:absolute top-0 left-0 w-full h-full"
+            playsInline
+            preload="metadata"
+            className="absolute inset-0 w-full h-full object-contain md:object-cover"
             onTimeUpdate={(e) => {
               const v = e.target;
               const nowT = v.currentTime || 0;
@@ -671,6 +708,20 @@ const VideoPlayerWithQuiz = ({
             }}
           />
 
+          {/* Center Play Button when not playing */}
+          {!isPlaying && !isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <button
+                onClick={handlePlayPause}
+                aria-label="Play"
+                className="pointer-events-auto group relative flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-blue-500 via-blue-600 to-purple-600 shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 focus:outline-none focus:ring-4 focus:ring-blue-500/40"
+              >
+                <div className="absolute inset-0 rounded-full bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                <Play className="text-white w-6 h-6 sm:w-7 sm:h-7 ml-0.5" />
+              </button>
+            </div>
+          )}
+
           {/* <iframe src="https://player.vdocipher.com/v2/?otp=20160313versASE323l2HcuuTENhewIswTbnMsoxUo8gr0Trpmg1eJZ0vZRM0L7v&playbackInfo=eyJ2aWRlb0lkIjoiYjFlMDlkNjMxODE0MDc1NTU4Y2Y1ZDAxYjk1ZmFhZDYifQ==" style="border:0;height:360px;width:640px;max-width:100%" allowFullScreen="true" allow="encrypted-media"></iframe> */}
           {/* {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-10">
@@ -704,7 +755,7 @@ const VideoPlayerWithQuiz = ({
           )} */}
         </div>
 
-        <div className="absolute videoPlayerControls bottom-0 left-0 right-0 p-2 sm:p-4 transition-opacity duration-300 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+        <div className="videoPlayerControls bottom-0 left-0 right-0 p-2 sm:p-4 transition-opacity duration-300 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
           {/* Progress Bar */}
           <div className="mb-2 sm:mb-3">
             <div
