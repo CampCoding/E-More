@@ -60,6 +60,7 @@ export default function KidsCourseContent() {
     console.log(course);
     setCourseDataById(course?.data?.message);
   };
+  console.log(courseDataById);
 
   useEffect(() => {
     if (course_id.get("course_id")) {
@@ -107,7 +108,7 @@ export default function KidsCourseContent() {
   const [courseData, setCourseData] = useState([]);
   const localData = localStorage.getItem("elmataryapp");
   const decryptedUserData = decryptData(localData);
-  
+
   const [pageLoading, setPageLoading] = useState(false);
   const getCourseData = async () => {
     setPageLoading(true);
@@ -181,11 +182,11 @@ export default function KidsCourseContent() {
           answered: q.already_answered,
           explanation: Array.isArray(q.real_answers)
             ? (
-                q.real_answers.find((ans) => ans.answer_check) ||
-                q.real_answers.find(
-                  (ans) => ans.answer_exp && ans.answer_exp.trim()
-                )
-              )?.answer_exp || ""
+              q.real_answers.find((ans) => ans.answer_check) ||
+              q.real_answers.find(
+                (ans) => ans.answer_exp && ans.answer_exp.trim()
+              )
+            )?.answer_exp || ""
             : "",
           image: q.question_image || "",
         };
@@ -422,20 +423,20 @@ export default function KidsCourseContent() {
 
       {currentQuestions && currentQuestions?.length
         ? currentQuestions.map((question, index) => (
-            <QuizModal
-              isOpen={
-                isModalOpen && !document.fullscreenElement && question?.open
-              }
-              onClose={closeModal}
-              question={question}
-              selectedAnswer={selectedAnswer}
-              setSelectedAnswer={setSelectedAnswer}
-              onSubmit={handleSubmitAnswer}
-              isFullscreen={false}
-              showSuccess={showSuccessAnimation}
-              showWrong={showWrongAnimation}
-            />
-          ))
+          <QuizModal
+            isOpen={
+              isModalOpen && !document.fullscreenElement && question?.open
+            }
+            onClose={closeModal}
+            question={question}
+            selectedAnswer={selectedAnswer}
+            setSelectedAnswer={setSelectedAnswer}
+            onSubmit={handleSubmitAnswer}
+            isFullscreen={false}
+            showSuccess={showSuccessAnimation}
+            showWrong={showWrongAnimation}
+          />
+        ))
         : null}
 
       <style>
@@ -520,33 +521,62 @@ export default function KidsCourseContent() {
                       </p> */}
                     </div>
                   </div>
-                  {currentVideo?.pdf_url && (
-                    <button
-                      onClick={() => setShowPdfModal(currentVideo?.pdf_url)}
-                      className="
-    block
-    px-4
-    py-2
-    rounded-full
-    text-white
-    font-bold
-    text-[1.2rem]
-    border-none
-    cursor-pointer
-    transition
-    duration-200
-    hover:scale-105
-    bg-gradient-to-r from-[#4f8cff] to-[#a084ee]
-    shadow-[0_4px_24px_rgba(160,132,238,0.33)]
-    rtl:font-cairo
-  "
-                      style={{
-                        fontFamily: "'Cairo', 'Tajawal', 'Amiri', sans-serif",
-                      }}
-                    >
-                      📄 عرض ملف الدورة
-                    </button>
-                  )}
+                  <div className="flex gap-2">
+                    {currentVideo?.pdf_url && (
+                      <button
+                        onClick={() => setShowPdfModal(currentVideo?.pdf_url)}
+                        className="
+        block
+        px-4
+        py-2
+        rounded-full
+        text-white
+        font-bold
+        text-[1.2rem]
+        border-none
+        cursor-pointer
+        transition
+        duration-200
+        hover:scale-105
+        bg-gradient-to-r from-[#4f8cff] to-[#a084ee]
+        shadow-[0_4px_24px_rgba(160,132,238,0.33)]
+        rtl:font-cairo
+      "
+                        style={{
+                          fontFamily: "'Cairo', 'Tajawal', 'Amiri', sans-serif",
+                        }}
+                      >
+                        📄 عرض ملف الدورة
+                      </button>
+                    )}
+                    {courseDataById?.pdf_url && (
+                      <button
+                        onClick={() => setShowPdfModal(courseDataById?.pdf_url)}
+                        className="
+        block
+        px-4
+        py-2
+        rounded-full
+        text-white
+        font-bold
+        text-[1.2rem]
+        border-none
+        cursor-pointer
+        transition
+        duration-200
+        hover:scale-105
+        bg-gradient-to-r from-[#ff6b6b] to-[#ffa500]
+        shadow-[0_4px_24px_rgba(255,107,107,0.33)]
+        rtl:font-cairo
+      "
+                        style={{
+                          fontFamily: "'Cairo', 'Tajawal', 'Amiri', sans-serif",
+                        }}
+                      >
+                        📚 عرض المذكرة
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="!bg-black !aspect-video md:h-[initial] !max-w-[100%]">
@@ -613,7 +643,7 @@ export default function KidsCourseContent() {
                       className="!flex !flex-wrap !items-center !justify-center sm:!justify-end !gap-2 sm:!gap-4 !w-full sm:!w-auto"
                       style={{ flexDirection: "row-reverse" }}
                     >
-                   
+
                     </div>
                   </div>
                 </div>
@@ -645,22 +675,20 @@ export default function KidsCourseContent() {
                                 onClick={() =>
                                   handleSelectVideo(unitIndex, videoIndex)
                                 }
-                                className={`!w-full !text-right !p-3 sm:!p-5 !rounded-xl sm:!rounded-2xl !mb-2 sm:!mb-3 !transition-all !duration-500 !transform hover:!scale-105 !shadow-lg hover:!shadow-2xl !border-none ${
-                                  unitIndex === currentTab &&
+                                className={`!w-full !text-right !p-3 sm:!p-5 !rounded-xl sm:!rounded-2xl !mb-2 sm:!mb-3 !transition-all !duration-500 !transform hover:!scale-105 !shadow-lg hover:!shadow-2xl !border-none ${unitIndex === currentTab &&
                                   videoIndex === currentIndex
-                                    ? "!bg-gradient-to-r !from-blue-600 !to-red-600 !text-white"
-                                    : "!bg-gradient-to-r !from-gray-100 !to-blue-50 hover:!from-blue-100 hover:!to-red-100 !text-gray-800"
-                                }`}
+                                  ? "!bg-gradient-to-r !from-blue-600 !to-red-600 !text-white"
+                                  : "!bg-gradient-to-r !from-gray-100 !to-blue-50 hover:!from-blue-100 hover:!to-red-100 !text-gray-800"
+                                  }`}
                               >
                                 <div className="!flex !items-center !justify-between">
                                   <div className="!flex !items-center">
                                     <div
-                                      className={`!w-8 !h-8 sm:!w-10 sm:!h-10 !rounded-full !flex !items-center !justify-center !ml-3 sm:!ml-4 !font-bold !text-base sm:!text-lg !border-none ${
-                                        unitIndex === currentTab &&
+                                      className={`!w-8 !h-8 sm:!w-10 sm:!h-10 !rounded-full !flex !items-center !justify-center !ml-3 sm:!ml-4 !font-bold !text-base sm:!text-lg !border-none ${unitIndex === currentTab &&
                                         videoIndex === currentIndex
-                                          ? "!bg-white !text-blue-600 !shadow-lg"
-                                          : "!bg-blue-300 !text-blue-800"
-                                      }`}
+                                        ? "!bg-white !text-blue-600 !shadow-lg"
+                                        : "!bg-blue-300 !text-blue-800"
+                                        }`}
                                     >
                                       {videoIndex + 1}
                                     </div>
@@ -669,12 +697,11 @@ export default function KidsCourseContent() {
                                         🎥 {video.video_title}
                                       </p>
                                       <p
-                                        className={`!text-xs sm:!text-base !font-semibold ${
-                                          unitIndex === currentTab &&
+                                        className={`!text-xs sm:!text-base !font-semibold ${unitIndex === currentTab &&
                                           videoIndex === currentIndex
-                                            ? "!text-white/90"
-                                            : "!text-gray-600"
-                                        }`}
+                                          ? "!text-white/90"
+                                          : "!text-gray-600"
+                                          }`}
                                       >
                                         ⏱️{" "}
                                         {video.video_duration
