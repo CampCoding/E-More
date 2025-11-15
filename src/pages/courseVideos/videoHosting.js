@@ -127,7 +127,7 @@ const VideoPlayerWithQuiz = ({
             detail: { id: playerIdRef.current },
           })
         );
-      } catch {}
+      } catch { }
     };
 
     const onPause = () => {
@@ -156,7 +156,7 @@ const VideoPlayerWithQuiz = ({
       if (v && !v.paused) {
         try {
           v.pause();
-        } catch {}
+        } catch { }
       }
     };
     window.addEventListener("app-video-play", handler);
@@ -169,7 +169,7 @@ const VideoPlayerWithQuiz = ({
     if (activeUrl && v && !v.paused) {
       try {
         v.pause();
-      } catch {}
+      } catch { }
     }
   }, [activeUrl]);
 
@@ -339,7 +339,7 @@ const VideoPlayerWithQuiz = ({
         setRetryCount(0);
         if (retryCount > 0) {
           setTimeout(() => {
-            video.play().catch(() => {});
+            video.play().catch(() => { });
             video.currentTime = progress;
             setVideoDuration(duration);
           }, 100);
@@ -451,9 +451,8 @@ const VideoPlayerWithQuiz = ({
         if (currentLevel) {
           const height = currentLevel.height;
           const bitrate = currentLevel.bitrate ?? currentLevel.attrs?.BANDWIDTH;
-          return `Auto (${height ? `${height}p` : "Unknown"}${
-            bitrate ? ` • ${bitrateToMbps(bitrate)}` : ""
-          })`;
+          return `Auto (${height ? `${height}p` : "Unknown"}${bitrate ? ` • ${bitrateToMbps(bitrate)}` : ""
+            })`;
         }
       }
       return "Auto";
@@ -540,7 +539,7 @@ const VideoPlayerWithQuiz = ({
 
       if (retryCount > 0) {
         setTimeout(() => {
-          video.play().catch(() => {});
+          video.play().catch(() => { });
           video.currentTime = progress;
         }, 100);
       }
@@ -581,9 +580,8 @@ const VideoPlayerWithQuiz = ({
               Number(lvl.attrs.RESOLUTION.split("x")[1])) ||
             undefined;
           const bitrate = lvl.bitrate ?? lvl.attrs?.BANDWIDTH ?? undefined;
-          const label = `${height ? `${height}p` : `L${idx}`}${
-            bitrate ? ` • ${bitrateToMbps(bitrate)}` : ""
-          }`;
+          const label = `${height ? `${height}p` : `L${idx}`}${bitrate ? ` • ${bitrateToMbps(bitrate)}` : ""
+            }`;
           return { level: idx, height, bitrate, label };
         });
 
@@ -826,11 +824,9 @@ const VideoPlayerWithQuiz = ({
                   onChange={handleChangeVolume}
                   className="w-16 sm:w-20 h-1 rounded-full appearance-none bg-white/20 slider hidden sm:block"
                   style={{
-                    background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${
-                      volume * 100
-                    }%, rgba(255,255,255,0.2) ${
-                      volume * 100
-                    }%, rgba(255,255,255,0.2) 100%)`,
+                    background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${volume * 100
+                      }%, rgba(255,255,255,0.2) ${volume * 100
+                      }%, rgba(255,255,255,0.2) 100%)`,
                   }}
                 />
               </div>
@@ -913,19 +909,19 @@ const VideoPlayerWithQuiz = ({
 
         {isFullscreen && currentQuestions && currentQuestions?.length
           ? currentQuestions.map((question, index) => (
-              <QuizModal
-                key={question.id || index}
-                isOpen={isModalOpen && question?.open}
-                onClose={closeModal}
-                question={question}
-                selectedAnswer={selectedAnswer}
-                setSelectedAnswer={setSelectedAnswer}
-                onSubmit={onSubmitAnswer}
-                isFullscreen={false}
-                showSuccess={showSuccess}
-                showWrong={showWrong}
-              />
-            ))
+            <QuizModal
+              key={question.id || index}
+              isOpen={isModalOpen && question?.open}
+              onClose={closeModal}
+              question={question}
+              selectedAnswer={selectedAnswer}
+              setSelectedAnswer={setSelectedAnswer}
+              onSubmit={onSubmitAnswer}
+              isFullscreen={false}
+              showSuccess={showSuccess}
+              showWrong={showWrong}
+            />
+          ))
           : null}
       </div>
       <div className="">
@@ -951,7 +947,7 @@ const VideoPlayerWithQuiz = ({
           {/* Enhanced Buttons Grid */}
           <div className="grid grid-cols-2 lg:grid-cols-2 gap-3 sm:gap-4">
             {/* تسميع الكلمات */}
-            <div className="relative group">
+           {currentVideo?.words ? <div className="relative group">
               <button
                 style={{
                   pointerEvents: !currentVideo?.words && "none",
@@ -964,11 +960,10 @@ const VideoPlayerWithQuiz = ({
                 }}
                 className={`relative w-full cursor-pointer rounded-2xl sm:rounded-3xl px-4 py-4 sm:px-5 sm:py-5 text-white shadow-lg transition-all duration-500 hover:scale-105 active:scale-95 overflow-hidden
         bg-gradient-to-br from-rose-500 via-red-500 to-orange-500 hover:from-rose-400 hover:via-red-400 hover:to-orange-400
-        flex flex-col items-center justify-center gap-3 text-center min-h-[100px] sm:min-h-[120px] ${
-          videoUrl === activityVideos.words
-            ? "ring-4 ring-white/60 ring-offset-2 ring-offset-black shadow-2xl scale-105"
-            : "hover:shadow-xl"
-        }`}
+        flex flex-col items-center justify-center gap-3 text-center min-h-[100px] sm:min-h-[120px] ${videoUrl === activityVideos.words
+                    ? "ring-4 ring-white/60 ring-offset-2 ring-offset-black shadow-2xl scale-105"
+                    : "hover:shadow-xl"
+                  }`}
               >
                 {/* Shimmer Effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
@@ -988,10 +983,10 @@ const VideoPlayerWithQuiz = ({
                   <div className="absolute top-2 right-2 w-3 h-3 bg-white rounded-full animate-pulse shadow-lg"></div>
                 )}
               </button>
-            </div>
+            </div>:null}
 
             {/* لحن الأغنية */}
-            <div className="relative group">
+            {currentVideo?.tune ? <div className="relative group">
               <button
                 style={{
                   pointerEvents: !currentVideo?.tune && "none",
@@ -1001,11 +996,10 @@ const VideoPlayerWithQuiz = ({
                 onClick={() => setActiveUrl(currentVideo?.tune)}
                 className={`relative w-full cursor-pointer rounded-2xl sm:rounded-3xl px-4 py-4 sm:px-5 sm:py-5 text-white shadow-lg transition-all duration-500 hover:scale-105 active:scale-95 overflow-hidden
         bg-gradient-to-br from-sky-500 via-indigo-500 to-purple-500 hover:from-sky-400 hover:via-indigo-400 hover:to-purple-400
-        flex flex-col items-center justify-center gap-3 min-h-[100px] sm:min-h-[120px] ${
-          videoUrl === activityVideos.tune
-            ? "ring-4 ring-white/60 ring-offset-2 ring-offset-black shadow-2xl scale-105"
-            : "hover:shadow-xl"
-        }`}
+        flex flex-col items-center justify-center gap-3 min-h-[100px] sm:min-h-[120px] ${videoUrl === activityVideos.tune
+                    ? "ring-4 ring-white/60 ring-offset-2 ring-offset-black shadow-2xl scale-105"
+                    : "hover:shadow-xl"
+                  }`}
               >
                 {/* Shimmer Effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
@@ -1025,10 +1019,10 @@ const VideoPlayerWithQuiz = ({
                   <div className="absolute top-2 right-2 w-3 h-3 bg-white rounded-full animate-pulse shadow-lg"></div>
                 )}
               </button>
-            </div>
+            </div>:null}
 
             {/* حل مع الفلاح */}
-            <div className="relative group">
+            {currentVideo?.solve ? <div className="relative group">
               <button
                 style={{
                   pointerEvents: !currentVideo?.solve && "none",
@@ -1038,11 +1032,10 @@ const VideoPlayerWithQuiz = ({
                 onClick={() => setActiveUrl(currentVideo?.solve)}
                 className={`relative w-full cursor-pointer rounded-2xl sm:rounded-3xl px-4 py-4 sm:px-5 sm:py-5 text-white shadow-lg transition-all duration-500 hover:scale-105 active:scale-95 overflow-hidden
         bg-gradient-to-br from-emerald-500 via-teal-500 to-green-500 hover:from-emerald-400 hover:via-teal-400 hover:to-green-400
-        flex flex-col items-center justify-center gap-3 min-h-[100px] sm:min-h-[120px] ${
-          videoUrl === activityVideos.solve
-            ? "ring-4 ring-white/60 ring-offset-2 ring-offset-black shadow-2xl scale-105"
-            : "hover:shadow-xl"
-        }`}
+        flex flex-col items-center justify-center gap-3 min-h-[100px] sm:min-h-[120px] ${videoUrl === activityVideos.solve
+                    ? "ring-4 ring-white/60 ring-offset-2 ring-offset-black shadow-2xl scale-105"
+                    : "hover:shadow-xl"
+                  }`}
               >
                 {/* Shimmer Effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
@@ -1062,10 +1055,10 @@ const VideoPlayerWithQuiz = ({
                   <div className="absolute top-2 right-2 w-3 h-3 bg-white rounded-full animate-pulse shadow-lg"></div>
                 )}
               </button>
-            </div>
+            </div> : null}
 
             {/* اختبر نفسك */}
-            <div
+            {currentVideo?.exam?.exam_id ? <div
               className="relative group"
               style={{
                 pointerEvents: !currentVideo?.exam?.exam_id && "none",
@@ -1078,11 +1071,10 @@ const VideoPlayerWithQuiz = ({
                 target="_blank"
                 className={`relative w-full cursor-pointer rounded-2xl sm:rounded-3xl px-4 py-4 sm:px-5 sm:py-5 text-white shadow-lg transition-all duration-500 hover:scale-105 active:scale-95 overflow-hidden
           bg-gradient-to-br from-fuchsia-600 via-pink-500 to-rose-500 hover:from-fuchsia-500 hover:via-pink-400 hover:to-rose-400
-          flex flex-col items-center justify-center gap-3 min-h-[100px] sm:min-h-[120px] ${
-            videoUrl === activityVideos.test
-              ? "ring-4 ring-white/60 ring-offset-2 ring-offset-black shadow-2xl scale-105"
-              : "hover:shadow-xl"
-          }`}
+          flex flex-col items-center justify-center gap-3 min-h-[100px] sm:min-h-[120px] ${videoUrl === activityVideos.test
+                    ? "ring-4 ring-white/60 ring-offset-2 ring-offset-black shadow-2xl scale-105"
+                    : "hover:shadow-xl"
+                  }`}
               >
                 {/* Shimmer Effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
@@ -1107,9 +1099,9 @@ const VideoPlayerWithQuiz = ({
                   <div className="absolute top-2 right-2 w-3 h-3 bg-white rounded-full animate-pulse shadow-lg"></div>
                 )}
               </a>
-            </div>
+            </div> : null}
           </div>
-          <div
+          {currentVideo?.unit_exam?.exam_id ? <div
             className="relative group !mt-2"
             style={{
               pointerEvents: !currentVideo?.exam?.exam_id && "none",
@@ -1121,12 +1113,11 @@ const VideoPlayerWithQuiz = ({
               href={`/examQuestion/${currentVideo?.unit_exam?.exam_id}`}
               target="_blank"
               className={`relative w-full cursor-pointer rounded-2xl sm:rounded-3xl px-4 py-4 sm:px-5 sm:py-5 text-white shadow-lg transition-all duration-500 hover:scale-105 active:scale-95 overflow-hidden
-          bg-gradient-to-br from-fuchsia-600 via-pink-500 to-rose-500 hover:from-fuchsia-500 hover:via-pink-400 hover:to-rose-400
-          flex flex-col items-center justify-center gap-3 min-h-[100px] sm:min-h-[120px] ${
-            videoUrl === activityVideos.test
-              ? "ring-4 ring-white/60 ring-offset-2 ring-offset-black shadow-2xl scale-105"
-              : "hover:shadow-xl"
-          }`}
+            bg-gradient-to-br from-fuchsia-600 via-pink-500 to-rose-500 hover:from-fuchsia-500 hover:via-pink-400 hover:to-rose-400
+            flex flex-col items-center justify-center gap-3 min-h-[100px] sm:min-h-[120px] ${videoUrl === activityVideos.test
+                  ? "ring-4 ring-white/60 ring-offset-2 ring-offset-black shadow-2xl scale-105"
+                  : "hover:shadow-xl"
+                }`}
             >
               {/* Shimmer Effect */}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
@@ -1151,7 +1142,7 @@ const VideoPlayerWithQuiz = ({
                 <div className="absolute top-2 right-2 w-3 h-3 bg-white rounded-full animate-pulse shadow-lg"></div>
               )}
             </a>
-          </div>
+          </div> : null}
           {/* Bottom Gradient Line */}
           <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
         </div>
