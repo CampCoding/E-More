@@ -134,11 +134,10 @@ const MobileNavBar = () => {
                   onClick={(e) => handleTabPress(item.id, e)}
                   onHoverStart={() => setHoveredTab(item.id)}
                   onHoverEnd={() => setHoveredTab(null)}
-                  className={`flex flex-col items-center justify-center relative ${
-                    isAddButton
+                  className={`flex flex-col items-center justify-center relative ${isAddButton
                       ? "w-16 h-16 rounded-2xl shadow-lg overflow-hidden"
                       : "w-14 h-14 rounded-xl"
-                  }`}
+                    }`}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
@@ -185,13 +184,12 @@ const MobileNavBar = () => {
                   >
                     <Icon
                       size={isAddButton ? 24 : 20}
-                      className={`${
-                        isAddButton
+                      className={`${isAddButton
                           ? "text-white"
                           : isActive
-                          ? "text-white"
-                          : "text-white/70"
-                      }`}
+                            ? "text-white"
+                            : "text-white/70"
+                        }`}
                     />
 
                     {/* Sparkle effect for active states */}
@@ -209,13 +207,12 @@ const MobileNavBar = () => {
 
                   {/* Label */}
                   <motion.span
-                    className={`text-xs mt-1 font-medium relative z-10 ${
-                      isAddButton
+                    className={`text-xs mt-1 font-medium relative z-10 ${isAddButton
                         ? "text-white"
                         : isActive
-                        ? "text-white"
-                        : "text-white/70"
-                    }`}
+                          ? "text-white"
+                          : "text-white/70"
+                      }`}
                     animate={{
                       opacity: isActive ? 1 : 0.8,
                       y: isActive && !isAddButton ? -1 : 0,

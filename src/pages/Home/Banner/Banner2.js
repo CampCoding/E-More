@@ -39,13 +39,13 @@ const Banner2 = () => {
         "انطلق معنا في رحلة تعليمية مليئة بالمرح والمتعة! نقدم  لك ولطلفلك تجربة فريدة تجمع بين الشرح التفاعلي، الأغاني الهادفة، والأجواء الحماسية التي تحول كل درس إلى مغامرة لا تُنسى.",
       emoji: "📋",
       image:
-        "https://res.cloudinary.com/dcs1nwnmm/image/upload/v1756563575/WhatsApp_Image_2025-08-28_at_15.03.09_995d0319_vc14yd.jpg",
+        "/banner-2.jpg",
       color: "from-blue-400 via-pink-400 to-rose-400",
       bgPattern: "from-blue-50 via-pink-50 to-rose-50",
     },
     {
       image:
-        "https://res.cloudinary.com/dcs1nwnmm/image/upload/v1756567413/Image_Editor_zcvaf7.png",
+        "/banner-1.jpg",
       title: "اختبارات تفاعلية وبنوك أسئلة مبتكرة!",
       subtitle: "تسميع الكلمات وتدريب يحاكي ورقة الامتحان 📝",
       description:
@@ -66,7 +66,7 @@ const Banner2 = () => {
       duration: "7s",
     },
     {
-      emoji: "🎨",
+      emoji: "🎨", 
       delay: 1500,
       position: "bottom-32 left-16",
       duration: "9s",
@@ -685,7 +685,7 @@ const EnhancedBanner = ({ currentBanner }) => {
               <img
                 src={currentBanner.image}
                 alt="banner"
-                className="!w-[500px] !h-[500px]  rounded-2xl !shadow-[0_0_20px_rgba(0,0,0,0.1)] !shadow-blue-300 !object-cover"
+                className="!w-[500px] !h-[500px]  rounded-2xl !shadow-[0_0_20px_rgba(0,0,0,0.1)] !shadow-blue-300 !object-contain rounded-full"
               />
             ) : (
               currentBanner.emoji

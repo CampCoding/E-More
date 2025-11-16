@@ -73,7 +73,7 @@ const Header = () => {
             >
               <Link to={"/"}>
                 <img
-                  src="https://res.cloudinary.com/dcs1nwnmm/image/upload/v1755328491/fala7_l_11zon_zjtjnn.png"
+                  src="/logo.png"
                   alt="Logo"
                   className="w-[130px] p-2 relative mr-2"
                 />
