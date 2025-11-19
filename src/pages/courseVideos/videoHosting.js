@@ -19,6 +19,62 @@ import axios from "axios";
 import { decryptData } from "../../utils/decrypt";
 import { base_url } from "../../constants";
 
+const STREAMABLE_REGEX = /\.(m3u8|mp4|m4v|mov|webm)(\?|$)/i;
+const HLS_PLAYLIST_REGEX = /\/playlist\.m3u8/i;
+const PROXY_HOSTS_REGEX =
+  /(drive\.google\.com|loom\.com|youtu(\.be|be\.com)|vimeo\.com|mediadelivery\.net)/i;
+const MAX_RETRY_ATTEMPTS = 4;
+
+const normalizeUrl = (url = "") =>
+  typeof url === "string" ? url.replace(/&amp;/g, "&").trim() : "";
+
+const isDirectStream = (url = "") =>
+  Boolean(url) &&
+  (STREAMABLE_REGEX.test(url) || HLS_PLAYLIST_REGEX.test(url) || /vz-/.test(url));
+
+const requiresProxyResolution = (url = "") =>
+  Boolean(url) && PROXY_HOSTS_REGEX.test(url);
+
+const extractSrcFromMarkup = (value = "") => {
+  if (typeof value !== "string") return null;
+  const match = value.match(/src=["']([^"']+)["']/i);
+  return match ? match[1] : null;
+};
+
+const extractPlayableUrl = (payload) => {
+  if (!payload) return null;
+
+  if (typeof payload === "string") {
+    const maybeSrc = extractSrcFromMarkup(payload);
+    return normalizeUrl(maybeSrc || payload);
+  }
+
+  if (typeof payload === "object") {
+    const {
+      stream_url,
+      video_url,
+      url,
+      src,
+      iframe,
+      hls,
+      download,
+      playback,
+    } = payload;
+    return normalizeUrl(
+      stream_url ||
+        video_url ||
+        url ||
+        src ||
+        hls ||
+        download ||
+        playback ||
+        (typeof iframe === "string" ? extractSrcFromMarkup(iframe) : "")
+    );
+  }
+
+  return null;
+};
+
 const VideoPlayerWithQuiz = ({
   currentQuestion,
   isModalOpen,
@@ -54,6 +110,11 @@ const VideoPlayerWithQuiz = ({
   const [videoError, setVideoError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
   const [activeUrl, setActiveUrl] = useState(null);
+  const [resolvedVideoUrl, setResolvedVideoUrl] = useState(null);
+  const [isResolvingSource, setIsResolvingSource] = useState(false);
+  const [sourceResolveTick, setSourceResolveTick] = useState(0);
+  const [playerResetToken, setPlayerResetToken] = useState(0);
+  const [errorType, setErrorType] = useState(null);
   const lastCheckedTime = useRef(0);
   useEffect(() => {
     const v = iframeRef.current;
@@ -106,13 +167,13 @@ const VideoPlayerWithQuiz = ({
     perMinuteWatchRef.current = new Map();
     lastVideoTimeRef.current = null;
     sentMinutesRef.current = new Set();
-  }, [videoUrl, isPlaying]);
+  }, [resolvedVideoUrl, isPlaying]);
 
   useEffect(() => {
     sentMinutesRef.current = new Set();
     watchSecondsRef.current = 0;
     lastTickRef.current = null;
-  }, [videoUrl, isPlaying]);
+  }, [resolvedVideoUrl, isPlaying]);
   useEffect(() => {
     const v = iframeRef.current;
     if (!v) return;
@@ -223,6 +284,69 @@ const VideoPlayerWithQuiz = ({
     };
   });
 
+  useEffect(() => {
+    let cancelled = false;
+
+    const resolveSource = async () => {
+      const normalized = normalizeUrl(videoUrl);
+
+      if (!normalized) {
+        setResolvedVideoUrl(null);
+        setVideoError("لا يوجد رابط فيديو متاح.");
+        setErrorType("source");
+        setIsResolvingSource(false);
+        return;
+      }
+
+      setVideoError(null);
+      setErrorType(null);
+
+      if (!requiresProxyResolution(normalized) || isDirectStream(normalized)) {
+        setResolvedVideoUrl(normalized);
+        setIsResolvingSource(false);
+        return;
+      }
+
+      setIsResolvingSource(true);
+      try {
+        const response = await fetchIframeSrc(normalized);
+        if (cancelled) return;
+
+        const playable = extractPlayableUrl(response);
+        if (playable) {
+          setResolvedVideoUrl(playable);
+        } else {
+          setResolvedVideoUrl(null);
+          setVideoError("تعذر تجهيز رابط الفيديو.");
+          setErrorType("source");
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setResolvedVideoUrl(null);
+          setVideoError("فشل الاتصال بالخادم لتحميل الفيديو.");
+          setErrorType("source");
+        }
+      } finally {
+        if (!cancelled) {
+          setIsResolvingSource(false);
+        }
+      }
+    };
+
+    resolveSource();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [videoUrl, sourceResolveTick]);
+
+  useEffect(() => {
+    if (!resolvedVideoUrl) return;
+    setRetryCount(0);
+    setVideoError(null);
+    setErrorType(null);
+  }, [resolvedVideoUrl]);
+
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
@@ -284,6 +408,19 @@ const VideoPlayerWithQuiz = ({
     }
   };
   const [videoDuration, setVideoDuration] = useState(0);
+
+  const handleSourceRetry = () => {
+    setVideoError(null);
+    setErrorType(null);
+    setSourceResolveTick((tick) => tick + 1);
+  };
+
+  const handlePlayerRetry = () => {
+    setVideoError(null);
+    setErrorType(null);
+    setRetryCount(0);
+    setPlayerResetToken((token) => token + 1);
+  };
   // useEffect(() => {
   //   let script = document.querySelector('script[src="https://unpkg.com/@peertube/embed-api/build/player.min.js"]');
 
@@ -313,69 +450,17 @@ const VideoPlayerWithQuiz = ({
   //   };
   // }, []);
 
-  useEffect(() => {
-    if (videoUrl) {
-      // Reset player state
-      setProgress(0);
-      setCurrentTime("0:00");
-      setTotalTime("0:00");
-      setIsPlaying(false);
-      setIsLoading(true);
-      setVideoError(null);
-      let retryTimeout = null;
-      const video = iframeRef.current;
-      const duration = video.duration;
-      const minutes = Math.floor(duration / 60);
-      const seconds = Math.floor(duration % 60)
-        .toString()
-        .padStart(2, "0");
-      setTotalTime(`${minutes}:${seconds}`);
-      const handleLoadedMetadata = () => {
-        setIsLoading(false);
-        video.muted = true;
-        video.play();
-        video.muted = false;
-        video.pause();
-        setRetryCount(0);
-        if (retryCount > 0) {
-          setTimeout(() => {
-            video.play().catch(() => { });
-            video.currentTime = progress;
-            setVideoDuration(duration);
-          }, 100);
-        }
-      };
-      const handleError = (e) => {
-        setIsLoading(true);
-        retryTimeout = setTimeout(() => {
-          setRetryCount((c) => c + 1);
-          if (iframeRef.current) {
-            iframeRef.current.load();
-          }
-        }, 2000);
-      };
-
-      video.addEventListener("loadedmetadata", handleLoadedMetadata);
-      video.addEventListener("error", handleError);
-
-      return () => {
-        video.removeEventListener("loadedmetadata", handleLoadedMetadata);
-        video.removeEventListener("error", handleError);
-        if (retryTimeout) clearTimeout(retryTimeout);
-      };
-    }
-  }, [videoUrl, retryCount]);
-
   const handlePlayPause = () => {
     const video = iframeRef.current;
-    if (video) {
-      if (video.paused) {
-        video.muted = true;
-        video.play();
+    if (!video || !resolvedVideoUrl || isResolvingSource || videoError) return;
+
+    if (video.paused) {
+      video.muted = true;
+      video.play().finally(() => {
         video.muted = false;
-      } else {
-        video.pause();
-      }
+      });
+    } else {
+      video.pause();
     }
   };
 
@@ -400,7 +485,7 @@ const VideoPlayerWithQuiz = ({
     const x = e.clientX - rect.left;
     const pct = Math.max(0, Math.min(1, x / rect.width));
     const video = iframeRef.current;
-    if (video && video.duration) {
+    if (video && video.duration && resolvedVideoUrl && !isResolvingSource && !videoError) {
       const time = pct * video.duration;
       video.currentTime = time;
       setProgress(pct * 100);
@@ -502,7 +587,7 @@ const VideoPlayerWithQuiz = ({
 
   useEffect(() => {
     const video = iframeRef.current;
-    if (!video || !videoUrl) return;
+    if (!video || !resolvedVideoUrl) return;
 
     let hls;
     let retryTimeout = null;
@@ -514,10 +599,11 @@ const VideoPlayerWithQuiz = ({
       setIsPlaying(false);
       setIsLoading(true);
       setVideoError(null);
+      setErrorType(null);
     };
 
     const setVideoDurationFormatted = () => {
-      const duration = video.duration;
+      const duration = video.duration || 0;
       setVideoDuration(duration);
       const minutes = Math.floor(duration / 60);
       const seconds = Math.floor(duration % 60)
@@ -526,52 +612,60 @@ const VideoPlayerWithQuiz = ({
       setTotalTime(`${minutes}:${seconds}`);
     };
 
+    const resumePlaybackPosition = () => {
+      const resumeAt =
+        typeof lastVideoTimeRef.current === "number"
+          ? lastVideoTimeRef.current
+          : 0;
+      if (resumeAt > 0 && video.duration && video.duration > resumeAt) {
+        video.currentTime = resumeAt;
+      }
+    };
+
     const handleLoadedMetadata = () => {
       setIsLoading(false);
       setRetryCount(0);
       setVideoDurationFormatted();
 
       video.muted = true;
-      video.play().then(() => {
-        video.muted = false;
-        video.pause();
-      });
-
-      if (retryCount > 0) {
-        setTimeout(() => {
-          video.play().catch(() => { });
-          video.currentTime = progress;
-        }, 100);
-      }
+      video
+        .play()
+        .then(() => {
+          video.muted = false;
+          resumePlaybackPosition();
+          video.pause();
+        })
+        .catch(() => {
+          resumePlaybackPosition();
+        });
     };
 
     const handleError = () => {
+      if (retryCount >= MAX_RETRY_ATTEMPTS) {
+        setIsLoading(false);
+        setVideoError("تعذر تشغيل الفيديو. حاول مرة أخرى لاحقًا.");
+        setErrorType("playback");
+        return;
+      }
       setIsLoading(true);
       retryTimeout = setTimeout(() => {
         setRetryCount((c) => c + 1);
-        if (Hls.isSupported() && hls) {
-          hls.loadSource(videoUrl);
-          hls.attachMedia(video);
-        } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-          video.src = videoUrl;
-        }
       }, 2000);
     };
 
     resetState();
+    video.crossOrigin = "anonymous";
+    video.removeAttribute("src");
+    video.load();
 
     if (Hls.isSupported()) {
       hls = new Hls({ enableWorker: true, debug: false });
-      hls.loadSource(videoUrl);
+      hls.loadSource(resolvedVideoUrl);
       hls.attachMedia(video);
-
-      // Store HLS instance on video element for quality control
       video.hls = hls;
 
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         video.currentTime = 0.1;
-
-        // Setup quality levels
         const lvls = (hls.levels || []).map((lvl, idx) => {
           const height =
             lvl.height ||
@@ -580,12 +674,12 @@ const VideoPlayerWithQuiz = ({
               Number(lvl.attrs.RESOLUTION.split("x")[1])) ||
             undefined;
           const bitrate = lvl.bitrate ?? lvl.attrs?.BANDWIDTH ?? undefined;
-          const label = `${height ? `${height}p` : `L${idx}`}${bitrate ? ` • ${bitrateToMbps(bitrate)}` : ""
-            }`;
+          const label = `${height ? `${height}p` : `L${idx}`}${
+            bitrate ? ` • ${bitrateToMbps(bitrate)}` : ""
+          }`;
           return { level: idx, height, bitrate, label };
         });
 
-        // Sort from highest to lowest quality
         lvls.sort((a, b) => (b.height || 0) - (a.height || 0));
 
         setLevels(lvls);
@@ -595,8 +689,20 @@ const VideoPlayerWithQuiz = ({
 
       video.addEventListener("loadedmetadata", handleLoadedMetadata);
       video.addEventListener("error", handleError);
+      setLevels([]);
+      setQualityEnabled(false);
     } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-      video.src = videoUrl;
+      video.src = resolvedVideoUrl;
+      setLevels([]);
+      setQualityEnabled(false);
+      setQuality("auto");
+      video.addEventListener("loadedmetadata", handleLoadedMetadata);
+      video.addEventListener("error", handleError);
+    } else {
+      video.src = resolvedVideoUrl;
+      setLevels([]);
+      setQualityEnabled(false);
+      setQuality("auto");
       video.addEventListener("loadedmetadata", handleLoadedMetadata);
       video.addEventListener("error", handleError);
     }
@@ -609,7 +715,7 @@ const VideoPlayerWithQuiz = ({
       video.removeEventListener("error", handleError);
       if (retryTimeout) clearTimeout(retryTimeout);
     };
-  }, [videoUrl]);
+  }, [resolvedVideoUrl, retryCount, playerResetToken]);
 
   return (
     <div
@@ -1104,8 +1210,8 @@ const VideoPlayerWithQuiz = ({
           {currentVideo?.unit_exam?.exam_id ? <div
             className="relative group !mt-2"
             style={{
-              pointerEvents: !currentVideo?.exam?.exam_id && "none",
-              opacity: !currentVideo?.exam?.exam_id && ".6",
+              pointerEvents: !currentVideo?.unit_exam?.exam_id && "none",
+              opacity: !currentVideo?.unit_exam?.exam_id && ".6",
               cursor: "not-allowed",
             }}
           >
