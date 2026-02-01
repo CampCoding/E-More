@@ -34,8 +34,8 @@ export default function SEO({
 		url: origin,
 		logo: image,
 		sameAs: [
-			'https://www.facebook.com/profile.php?id=61562063557757',
-			'https://www.instagram.com/mr.elfallah',
+			'https://www.facebook.com/profile.php?id=100064363628042',
+			'https://www.instagram.com/el_mister_el_fallah/',
 		],
 	};
 

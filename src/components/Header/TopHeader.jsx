@@ -135,7 +135,7 @@ const TopHeader = () => {
       followers: "12.5K",
     },
     {
-      href: "https://www.instagram.com/el_mister_el_fallah/?fbclid=IwY2xjawMRZ2NleHRuA2FlbQIxMABicmlkETF1a1U4ODZ4TTZjN3pjcDNJAR5X0kUirOI51CCrMwlF74nEC15Ke39Z5NJ_8yThUoeDOVW28fw3lnaLMWPlVg_aem_8Pjllw97aaxK2QlpgFIj2Q#",
+      href: "https://www.instagram.com/el_mister_el_fallah/",
       icon: <Instagram size={16} />,
       label: "انستجرام",
       hoverColor: "hover:text-pink-400",

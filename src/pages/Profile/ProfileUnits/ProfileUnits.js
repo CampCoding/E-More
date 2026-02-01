@@ -93,7 +93,7 @@ const ProfileUnits = () => {
           onClick={() => {}}
           className="profilevideo_page"
           target="_blank"
-          href="https://facebook.com"
+          href="https://www.facebook.com/profile.php?id=100064363628042"
         >
           {currentVideo ? (
             <>

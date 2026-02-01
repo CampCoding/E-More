@@ -76,14 +76,14 @@ const Footer = () => {
   const socialLinks = [
     {
       icon: Facebook,
-      url: "https://www.facebook.com/profile.php?id=61562063557757&mibextid=LQQJ4d",
+      url: "https://www.facebook.com/profile.php?id=100064363628042",
       color: "from-blue-400 via-blue-500 to-blue-600",
       shadow: "shadow-blue-500/50",
       name: "فيسبوك",
     },
     {
       icon: Instagram,
-      url: "https://www.instagram.com/MR.El-Fallah ?igsh=dnR3OGgwemFhZHp4",
+      url: "https://www.instagram.com/el_mister_el_fallah/",
       color: "from-red-400 via-blue-500 to-indigo-600",
       shadow: "shadow-red-500/50",
       name: "انستغرام",
