@@ -2,6 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes moveWatermark {
+  0% { transform: translate(0, 0); }
+  10% { transform: translate(50px, -20px); }
+  20% { transform: translate(-30px, 40px); }
+  30% { transform: translate(70px, 10px); }
+  40% { transform: translate(-50px, -30px); }
+  50% { transform: translate(20px, 60px); }
+  60% { transform: translate(-40px, -10px); }
+  70% { transform: translate(60px, 30px); }
+  80% { transform: translate(-20px, -50px); }
+  90% { transform: translate(40px, 20px); }
+  100% { transform: translate(0, 0); }
+}
+
+.watermark-animation {
+  animation: moveWatermark 15s infinite linear;
+}
+
 body {
   margin: 0;
   padding: 0;

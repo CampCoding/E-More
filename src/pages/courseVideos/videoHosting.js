@@ -116,6 +116,17 @@ const VideoPlayerWithQuiz = ({
   const [playerResetToken, setPlayerResetToken] = useState(0);
   const [errorType, setErrorType] = useState(null);
   const lastCheckedTime = useRef(0);
+  const localData = localStorage.getItem("elmataryapp");
+  const decryptedUserData = decryptData(localData);
+  const [watermarkX, setWatermarkX] = useState(80);
+  const [watermarkY, setWatermarkY] = useState(80);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setWatermarkX(Math.random() * 80 + 10); // 10% to 90%
+      setWatermarkY(Math.random() * 80 + 10);
+    }, 3000); // every 3 seconds
+    return () => clearInterval(interval);
+  }, []);
   useEffect(() => {
     const v = iframeRef.current;
     if (!v) return;
@@ -811,6 +822,14 @@ const VideoPlayerWithQuiz = ({
               }
             }}
           />
+
+          {/* Watermark */}
+          <div 
+            className="absolute text-white bg-black bg-opacity-30 p-1 rounded text-xs pointer-events-none"
+            style={{ top: `${watermarkY}%`, left: `${watermarkX}%`, transition: 'all 1s ease' }}
+          >
+            {decryptedUserData?.student_email}
+          </div>
 
           {/* Center Play Button when not playing */}
           {!isPlaying && !isLoading && (
