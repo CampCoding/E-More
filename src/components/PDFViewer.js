@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { loadPDF } from "./helperFunctions";
-import { PDFButtons } from "./PDFBUTTONS";
 import CryptoJS from "crypto-js";
 import { toast } from "react-toastify";
 import { useSearchParams } from "react-router-dom";
 import Modal from "./modal";
-import VoiceRecorder from "./Recording";
+// import VoiceRecorder from "./Recording";
 import WebViewer from "@pdftron/webviewer";
 import axios from "axios";
 
@@ -27,13 +25,13 @@ function PDFViewer(props) {
   const decryptedBytes = localData && CryptoJS.AES.decrypt(localData, "111");
   const userData =
     decryptedBytes && JSON.parse(decryptedBytes.toString(CryptoJS.enc.Utf8));
-  const getUserAtts = (type, pageNum) => {};
+  const getUserAtts = (type, pageNum) => { };
   const getAttachmentForCurrentPage = (type, pageNum) => {
     if (!props?.adminAtts) return null;
     const attachment = props.adminAtts.filter(
       (att) =>
         parseInt(att.page_number) ==
-          instanceRef?.current?.viewState?.currentPageIndex + 1 && att[type]
+        instanceRef?.current?.viewState?.currentPageIndex + 1 && att[type]
     )[0];
 
     return attachment ? attachment[type] : null;
@@ -300,7 +298,7 @@ function PDFViewer(props) {
           }}
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-            <path fill="currentColor" d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6l-6 6z"/>
+            <path fill="currentColor" d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6l-6 6z" />
           </svg>
         </button>
         <button
@@ -332,7 +330,7 @@ function PDFViewer(props) {
           }}
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-            <path fill="currentColor" d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6l-6-6z"/>
+            <path fill="currentColor" d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6l-6-6z" />
           </svg>
         </button>
       </div>
@@ -373,7 +371,7 @@ function PDFViewer(props) {
             setVoiceUrl(null);
           }}
         >
-          <VoiceRecorder
+          {/* <VoiceRecorder
             data={{
               student_id: userData?.student_id,
               token_value: userData?.token_value,
@@ -390,7 +388,7 @@ function PDFViewer(props) {
               setUserAttachmentForCurrentPage:
                 props?.setUserAttachmentForCurrentPage
             }}
-          />
+          /> */}
         </Modal>
       ) : null}
       <Modal visible={video} onClose={() => setVideo(null)}>

@@ -11,6 +11,7 @@ import {
   Phone,
   LogOut,
   Settings,
+  FileText,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ProfileMenu from "./profile_menu";
@@ -53,6 +54,7 @@ const Header = () => {
       path: "/questions",
       icon: Trophy,
     },
+    { name: "المذكرات", path: "/notes", icon: FileText },
   ];
 
   return (

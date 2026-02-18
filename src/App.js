@@ -64,6 +64,7 @@ import LineMatchingGame from "./Drafts.jsx/Match";
 import WordArrangementPuzzle from "./Drafts.jsx/WordArrangement";
 import TopHeader from "./components/Header/TopHeader";
 import MobileNavBar from './components/Header/MobileNavBar';
+import NotesPage from "./pages/Notes/NotesPage";
 
 function App() {
   const { pathname } = useLocation();
@@ -100,6 +101,7 @@ function App() {
             <Route path="/subscribe" element={<Subscribe />} />
             {/* <Route path="*" element={<VideoPlayer />} /> */}
             <Route path="/drafts" element={<DraftsPage />} />
+            <Route path="/notes" element={<NotesPage />} />
 
             {userData && Object.keys(userData).length > 0 ? (
               <>
@@ -163,14 +165,14 @@ function App() {
                 />
               </>
             )}
-            {}
+            { }
           </Routes>
         </>
       </>
-      {}
+      { }
 
       <ToastContainer />
-      {}
+      { }
     </div>
   );
 }
