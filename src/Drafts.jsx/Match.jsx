@@ -275,15 +275,15 @@ const LineMatchingGame = ({ gameData, onChange, defaultConnectionsData = [] }) =
       ))}
 
       <div className="mx-auto w-full relative z-10">
-        <div className="bg-gradient-to-br rounded-3xl from-blue-900 via-purple-900 to-indigo-900 backdrop-blur-md shadow-2xl p-3 md:p-8">
+        <div className="bg-gradient-to-br rounded-2xl md:rounded-3xl from-blue-900 via-purple-900 to-indigo-900 backdrop-blur-md shadow-2xl p-3 md:p-6">
           {/* header */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 mb-4">
-              <h1 className="text-lg md:text-5xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+          <div className="text-center mb-3 md:mb-4">
+            <div className="inline-flex items-center gap-2 mb-1 md:mb-2">
+              <h1 className="text-base md:text-2xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
                 لعبة توصيل العناصر
               </h1>
             </div>
-            <p className="text-base md:text-xl text-blue-100 mb-6">
+            <p className="text-xs md:text-base text-blue-100 mb-2 md:mb-3">
               صِل العناصر المرتبطة وشاهد السحر يحدث!
             </p>
 
@@ -303,7 +303,7 @@ const LineMatchingGame = ({ gameData, onChange, defaultConnectionsData = [] }) =
 
               <button
                 onClick={resetGame}
-                className="text-sm md:text-lg group px-6 py-3 bg-gradient-to-r from-[#011294] to-blue-600 hover:from-blue-600 hover:to-[#011294] text-white rounded-full font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex items-center gap-2 border border-white/30"
+                className="text-xs md:text-sm group px-4 py-1.5 md:px-5 md:py-2 bg-gradient-to-r from-[#011294] to-blue-600 hover:from-blue-600 hover:to-[#011294] text-white rounded-full font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex items-center gap-2 border border-white/30"
               >
                 <RotateCcw className="w-5 h-5 group-hover:rotate-180 transition-transform duration-500" />
                 إعادة تعيين اللعبة
@@ -327,14 +327,19 @@ const LineMatchingGame = ({ gameData, onChange, defaultConnectionsData = [] }) =
           </div>
 
           {/* board */}
-          <div dir="ltr" className="relative" ref={boardRef}>
-            <div className="flex mx-auto flex-row flex-nowrap items-center justify-between gap-12">
+          <div
+            dir="ltr"
+            className="relative max-h-[62vh] md:max-h-[65vh] overflow-y-auto pr-1"
+            ref={boardRef}
+            onScroll={() => force((x) => x + 1)}
+          >
+            <div className="flex mx-auto flex-row flex-nowrap items-start justify-between gap-4 md:gap-12">
               {/* left column */}
-              <div className="space-y-4">
-                <h3 className="text-lg md:text-2xl font-bold text-center text-white mb-6 flex items-center justify-center gap-2">
-                  <div className="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
+              <div className="space-y-2 md:space-y-4 flex-1">
+                <h3 className="sticky top-0 z-20 bg-gradient-to-b from-blue-900 to-blue-900/80 backdrop-blur-sm text-sm md:text-xl font-bold text-center text-white mb-2 md:mb-4 py-1 flex items-center justify-center gap-2">
+                  <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
                   Items
-                  <div className="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
+                  <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
                 </h3>
 
                 {gameData.leftColumn.map((item, index) => {
@@ -347,7 +352,7 @@ const LineMatchingGame = ({ gameData, onChange, defaultConnectionsData = [] }) =
                       key={item.id}
                       ref={(el) => (leftRefs.current[item.id] = el)}
                       onClick={() => handleItemClick(item, "left")}
-                      className={`group relative p-3 md:p-6 rounded-2xl border-2 cursor-pointer transition-all duration-500 transform hover:scale-105 hover:-translate-y-1 ${
+                      className={`group relative min-h-[52px] md:min-h-[72px] flex items-center justify-center p-2 md:p-4 rounded-xl md:rounded-2xl border-2 cursor-pointer transition-all duration-500 transform hover:scale-105 hover:-translate-y-1 ${
                         isPulsing ? "animate-pulse scale-110" : ""
                       } ${
                         isSelected
@@ -363,10 +368,10 @@ const LineMatchingGame = ({ gameData, onChange, defaultConnectionsData = [] }) =
                           <img
                             src={item.image}
                             alt={item.text || ""}
-                            className="w-16 h-16 md:w-24 md:h-24 object-cover rounded-xl"
+                            className="w-10 h-10 md:w-14 md:h-14 object-cover rounded-lg shrink-0"
                           />
                         ) : (
-                          <span className="text-sm md:text-xl font-normal md:font-bold text-white group-hover:text-yellow-300 transition-colors duration-300">
+                          <span className="text-xs md:text-lg font-normal md:font-bold text-white group-hover:text-yellow-300 transition-colors duration-300 text-center leading-tight">
                             {item.text}
                           </span>
                         )}
@@ -378,11 +383,11 @@ const LineMatchingGame = ({ gameData, onChange, defaultConnectionsData = [] }) =
               </div>
 
               {/* right column */}
-              <div className="space-y-4">
-                <h3 className="text-lg md:text-2xl font-bold text-center text-white mb-6 flex items-center justify-center gap-2">
-                  <div className="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
+              <div className="space-y-2 md:space-y-4 flex-1">
+                <h3 className="sticky top-0 z-20 bg-gradient-to-b from-blue-900 to-blue-900/80 backdrop-blur-sm text-sm md:text-xl font-bold text-center text-white mb-2 md:mb-4 py-1 flex items-center justify-center gap-2">
+                  <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
                   Definitions
-                  <div className="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
+                  <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
                 </h3>
 
                 {gameData.rightColumn.map((item, index) => {
@@ -395,7 +400,7 @@ const LineMatchingGame = ({ gameData, onChange, defaultConnectionsData = [] }) =
                       key={item.id}
                       ref={(el) => (rightRefs.current[item.id] = el)}
                       onClick={() => handleItemClick(item, "right")}
-                      className={`group relative p-3 md:p-6 rounded-2xl border-2 cursor-pointer transition-all duration-500 transform hover:scale-105 hover:-translate-y-1 ${
+                      className={`group relative min-h-[52px] md:min-h-[72px] flex items-center justify-center p-2 md:p-4 rounded-xl md:rounded-2xl border-2 cursor-pointer transition-all duration-500 transform hover:scale-105 hover:-translate-y-1 ${
                         isPulsing ? "animate-pulse scale-110" : ""
                       } ${
                         isSelected
@@ -407,9 +412,17 @@ const LineMatchingGame = ({ gameData, onChange, defaultConnectionsData = [] }) =
                       style={{ animationDelay: `${index * 0.1 + 0.5}s` }}
                     >
                       <div className="flex items-center justify-center gap-3">
-                        <span className="text-sm md:text-xl font-normal md:font-bold text-white group-hover:text-yellow-300 transition-colors duration-300">
-                          {item.text}
-                        </span>
+                        {item.image ? (
+                          <img
+                            src={item.image}
+                            alt={item.text || ""}
+                            className="w-10 h-10 md:w-14 md:h-14 object-cover rounded-lg shrink-0"
+                          />
+                        ) : (
+                          <span className="text-xs md:text-lg font-normal md:font-bold text-white group-hover:text-yellow-300 transition-colors duration-300 text-center leading-tight">
+                            {item.text}
+                          </span>
+                        )}
                       </div>
                       <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-400/0 via-pink-400/10 to-purple-400/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     </div>
