@@ -99,8 +99,28 @@ export default function Quiz({
     return true;
   };
 
-  const memoGameData = useMemo(
-    () => ({
+  const memoGameData = useMemo(() => {
+    if (selectedQuestion?.type === "matching-with-images") {
+      const left = selectedQuestion?.leftColumn ?? [];
+      const right = selectedQuestion?.rightColumn ?? [];
+      return {
+        leftColumn: left.map((item, i) => ({
+          id: `l${i + 1}`,
+          text: item.name,
+          type: String(item.id),
+        })),
+        rightColumn: right.map((item, i) => {
+          const match = left.find((l) => l.id === item.id);
+          return {
+            id: `r${i + 1}`,
+            text: match?.name ?? "",
+            image: item.image,
+            type: String(item.id),
+          };
+        }),
+      };
+    }
+    return {
       leftColumn:
         selectedQuestion?.leftColumn?.map((item, i) => ({
           ...item,
@@ -111,9 +131,12 @@ export default function Quiz({
           ...item,
           id: `r${i + 1}`,
         })) ?? [],
-    }),
-    [selectedQuestion?.leftColumn, selectedQuestion?.rightColumn]
-  );
+    };
+  }, [
+    selectedQuestion?.type,
+    selectedQuestion?.leftColumn,
+    selectedQuestion?.rightColumn,
+  ]);
 
   const defaultLinesForThisQuestion = useMemo(() => {
     return answers[questionIndex] ?? [];
@@ -199,6 +222,7 @@ export default function Quiz({
             const joiner = question?.gameType === "character" ? "" : " ";
             return ans.join(joiner);
           case "line-match":
+          case "matching-with-images":
             if (!Array.isArray(ans)) return [];
             return ans.map((c) => ({
               text: c?.leftData?.text ?? "",
@@ -428,6 +452,7 @@ export default function Quiz({
       case "arrangePuzzle":
         return isArrangeCorrect(question, ans);
       case "line-match":
+      case "matching-with-images":
         return isLineMatchCorrect(question, ans);
       default:
         return isMcqCorrect(question, ans);
@@ -440,7 +465,7 @@ export default function Quiz({
       const joiner = question?.gameType === "character" ? "" : " ";
       return ans.join(joiner);
     }
-    if (question?.type === "line-match") {
+    if (question?.type === "line-match" || question?.type === "matching-with-images") {
       if (!Array.isArray(ans)) return "";
       const ok = ans.filter((x) => x?.isCorrect).length;
       const total = Math.min(
@@ -902,7 +927,10 @@ export default function Quiz({
                         </div>
                       </div>
                     );
-                  } else if (question?.type === "line-match") {
+                  } else if (
+                    question?.type === "line-match" ||
+                    question?.type === "matching-with-images"
+                  ) {
                     const totalPairs = Math.min(
                       question?.leftColumn?.length || 0,
                       question?.rightColumn?.length || 0
@@ -1441,7 +1469,8 @@ export default function Quiz({
 
             {/* Content */}
             <div className=" grow overflow-y-auto w-full rounded-xl overflow-hidden">
-              {selectedQuestion.type === "line-match" ? (
+              {selectedQuestion.type === "line-match" ||
+              selectedQuestion.type === "matching-with-images" ? (
                 <div className="w-full">
                   <LineMatchingGame
                     key={questionIndex}
