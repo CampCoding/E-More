@@ -359,9 +359,17 @@ const LineMatchingGame = ({ gameData, onChange, defaultConnectionsData = [] }) =
                       style={{ animationDelay: `${index * 0.1}s` }}
                     >
                       <div className="flex items-center justify-center gap-3">
-                        <span className="text-sm md:text-xl font-normal md:font-bold text-white group-hover:text-yellow-300 transition-colors duration-300">
-                          {item.text}
-                        </span>
+                        {item.image ? (
+                          <img
+                            src={item.image}
+                            alt={item.text || ""}
+                            className="w-16 h-16 md:w-24 md:h-24 object-cover rounded-xl"
+                          />
+                        ) : (
+                          <span className="text-sm md:text-xl font-normal md:font-bold text-white group-hover:text-yellow-300 transition-colors duration-300">
+                            {item.text}
+                          </span>
+                        )}
                       </div>
                       <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-400/0 via-purple-400/10 to-blue-400/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     </div>

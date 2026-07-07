@@ -100,8 +100,28 @@ export default function Quiz({
     return true;
   };
 
-  const memoGameData = useMemo(
-    () => ({
+  const memoGameData = useMemo(() => {
+    if (selectedQuestion?.type === "matching-with-images") {
+      const left = selectedQuestion?.leftColumn ?? [];
+      const right = selectedQuestion?.rightColumn ?? [];
+      return {
+        leftColumn: left.map((item, i) => ({
+          id: `l${i + 1}`,
+          text: item.name,
+          type: String(item.id),
+        })),
+        rightColumn: right.map((item, i) => {
+          const match = left.find((l) => l.id === item.id);
+          return {
+            id: `r${i + 1}`,
+            text: match?.name ?? "",
+            image: item.image,
+            type: String(item.id),
+          };
+        }),
+      };
+    }
+    return {
       leftColumn:
         selectedQuestion?.leftColumn?.map((item, i) => ({
           ...item,
@@ -112,9 +132,12 @@ export default function Quiz({
           ...item,
           id: `r${i + 1}`,
         })) ?? [],
-    }),
-    [selectedQuestion?.leftColumn, selectedQuestion?.rightColumn]
-  );
+    };
+  }, [
+    selectedQuestion?.type,
+    selectedQuestion?.leftColumn,
+    selectedQuestion?.rightColumn,
+  ]);
 
   const defaultLinesForThisQuestion = useMemo(() => {
     return answers[questionIndex] ?? [];
@@ -145,7 +168,8 @@ export default function Quiz({
         const joiner = question?.gameType === "character" ? "" : " ";
         return ans.join(joiner);
       }
-      case "line-match": {
+      case "line-match":
+      case "matching-with-images": {
         if (!Array.isArray(ans)) return [];
         return ans.map((c) => ({
           text: c?.leftData?.text ?? "",
@@ -182,7 +206,7 @@ export default function Quiz({
     } else if (q?.type === "arrangePuzzle") {
       setCorrectAnswer(q?.correctSentence || q?.question_text || "");
       setAllWrongAnswers([]);
-    } else if (q?.type === "line-match") {
+    } else if (q?.type === "line-match" || q?.type === "matching-with-images") {
       const totalPairs = Math.min(
         q?.leftColumn?.length || 0,
         q?.rightColumn?.length || 0
@@ -255,6 +279,7 @@ export default function Quiz({
             const joiner = question?.gameType === "character" ? "" : " ";
             return ans.join(joiner);
           case "line-match":
+          case "matching-with-images":
             if (!Array.isArray(ans)) return [];
             return ans.map((c) => ({
               text: c?.leftData?.text ?? "",
@@ -344,7 +369,10 @@ export default function Quiz({
         // For arrangePuzzle, show the correct sentence as the answer
         correctAns = question.correctSentence || question.question_text || "";
         wrongAnswers = []; // Not applicable
-      } else if (question.type === "line-match") {
+      } else if (
+        question.type === "line-match" ||
+        question.type === "matching-with-images"
+      ) {
         // For line-match, show the correct pairs as a formatted string
         if (Array.isArray(question.correctPairs)) {
           correctAns = question.correctPairs
@@ -415,6 +443,7 @@ export default function Quiz({
       case "arrangePuzzle":
         return isArrangeCorrect(question, ans);
       case "line-match":
+      case "matching-with-images":
         return isLineMatchCorrect(question, ans);
       default:
         return isMcqCorrect(question, ans);
@@ -427,7 +456,7 @@ export default function Quiz({
       const joiner = question?.gameType === "character" ? "" : " ";
       return ans.join(joiner);
     }
-    if (question?.type === "line-match") {
+    if (question?.type === "line-match" || question?.type === "matching-with-images") {
       if (!Array.isArray(ans)) return "";
       const ok = ans.filter((x) => x?.isCorrect).length;
       const total = Math.min(
@@ -444,9 +473,20 @@ export default function Quiz({
 
   // Build the correct solution pairs for line-match questions
   const getLineMatchCorrectPairs = (question) => {
-    if (!question || question?.type !== "line-match") return [];
+    if (
+      !question ||
+      (question?.type !== "line-match" &&
+        question?.type !== "matching-with-images")
+    )
+      return [];
     const leftItems = question?.leftColumn || [];
     const rightItems = question?.rightColumn || [];
+    if (question.type === "matching-with-images") {
+      return leftItems.map((l) => ({
+        leftText: l?.name ?? "",
+        rightText: l?.name ?? "",
+      }));
+    }
     const typeToRightText = new Map();
     rightItems.forEach((r) => {
       const key = String(r?.type ?? "");
@@ -909,7 +949,10 @@ export default function Quiz({
                         </div>
                       </div>
                     );
-                  } else if (question?.type === "line-match") {
+                  } else if (
+                    question?.type === "line-match" ||
+                    question?.type === "matching-with-images"
+                  ) {
                     const totalPairs = Math.min(
                       question?.leftColumn?.length || 0,
                       question?.rightColumn?.length || 0
@@ -1661,7 +1704,8 @@ export default function Quiz({
 
             {/* Content */}
             <div className=" grow overflow-y-auto w-full rounded-xl overflow-hidden">
-              {selectedQuestion.type === "line-match" ? (
+              {selectedQuestion.type === "line-match" ||
+              selectedQuestion.type === "matching-with-images" ? (
                 <div className="w-full">
                   <LineMatchingGame
                     key={questionIndex}
@@ -1774,7 +1818,8 @@ export default function Quiz({
                         الإجابة الصحيحة
                       </h4>
                     </div>
-                    {selectedQuestion?.type === "line-match" ? (
+                    {selectedQuestion?.type === "line-match" ||
+                    selectedQuestion?.type === "matching-with-images" ? (
                       <div className="text-green-800 font-semibold">
                         <ul className="list-disc pr-5 space-y-1">
                           {getLineMatchCorrectPairs(selectedQuestion).map(
@@ -1797,7 +1842,8 @@ export default function Quiz({
                     <div className="flex items-center gap-2 mb-1">
                       <h4 className="text-blue-800 font-bold m-0">إجابتك</h4>
                     </div>
-                    {selectedQuestion?.type === "line-match" ? (
+                    {selectedQuestion?.type === "line-match" ||
+                    selectedQuestion?.type === "matching-with-images" ? (
                       Array.isArray(answers[questionIndex]) &&
                       answers[questionIndex].length > 0 ? (
                         <ul className="list-disc pr-5 space-y-1">
